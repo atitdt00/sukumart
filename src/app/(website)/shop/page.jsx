@@ -32,7 +32,6 @@ function page() {
         toast.error("There are no products");
         return;
       }
-      console.log("shop product", data);
       setProducts(data);
     } catch (error) {
       console.error(error);

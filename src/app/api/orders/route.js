@@ -23,10 +23,15 @@ export async function POST(request) {
         );
       }
 
+      //Generate Sukumart ProductID
+      const orderId = `SUK${Math.floor(
+  100000 + Math.random() * 900000
+)}`;
+
       //create  order
       const order = await Order.create(
         {
-            customer, products, subtotal, shipping, tax, total, paymentMethod,
+           orderId, customer, products, subtotal, shipping, tax, total, paymentMethod,
         }
       );
 

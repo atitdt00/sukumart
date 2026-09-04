@@ -16,7 +16,6 @@ function Page() {
       setLoading(true)
       const data = await getCategories();
 
-      console.log("Categories:", data);
 
       // Your API returns { success: true, categories: [...] }
       setCategories(data || []);

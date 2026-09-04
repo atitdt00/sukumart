@@ -6,11 +6,13 @@ import React, { useEffect, useState, useRef } from "react";
 import { getCategories } from "../../Services/Category_Service";
 import { toast } from "react-toastify";
 import { useModal } from "../../context/ModalContext";
-import {  logoutUser } from "../../Services/Auth_Service";
+import { logoutUser } from "../../Services/Auth_Service";
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
+import { useRouter } from "next/navigation";
 
 function Header() {
+  const router = useRouter();
   const { cart } = useCart();
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
@@ -18,11 +20,26 @@ function Header() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { openLogin, isLoginOpen } = useModal(); // Include modal state if available
-const { user, setUser, authLoading}=useAuth();
+  const { openLogin } = useModal(); // Include modal state if available
+  const { user, setUser, authLoading } = useAuth();
   const categoryRef = useRef(null);
+  const [search, setSearch] = useState("");
 
- 
+  //search products
+  const handleSearch = (e) => {
+   
+      e.preventDefault();
+
+      const value = search.trim();
+
+      if (!value) {
+        router.push("/search");
+        return;
+      }
+
+      router.push(`/search?q=${encodeURIComponent(value)}`);
+    
+  };
 
   // Handle Logout User
   const handleLogout = async () => {
@@ -45,7 +62,9 @@ const { user, setUser, authLoading}=useAuth();
       const data = await getCategories();
       setCategories(data || []);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch categories");
+      toast.error(
+        error.response?.data?.message || "Failed to fetch categories",
+      );
     } finally {
       setLoading(false);
     }
@@ -108,7 +127,10 @@ const { user, setUser, authLoading}=useAuth();
                     Categories
                   </p>
 
-                  <div role="listbox" className="flex flex-col gap-0.5 max-h-60 overflow-y-auto">
+                  <div
+                    role="listbox"
+                    className="flex flex-col gap-0.5 max-h-60 overflow-y-auto"
+                  >
                     {categories.map((category) => (
                       <Link
                         key={category._id}
@@ -124,19 +146,23 @@ const { user, setUser, authLoading}=useAuth();
               )}
             </div>
 
-            {/* Search Input */}
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="flex-1 h-full px-4 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400"
-            />
-            {/* Search Button */}
-            <button
-              type="button"
-              className="flex items-center justify-center w-12 h-10 mr-1 rounded-full bg-[#002D62] text-white hover:bg-[#0055B3] transition-colors"
-            >
-              <i className="fa-solid fa-magnifying-glass"></i>
-            </button>
+            <form onSubmit={handleSearch} className="flex flex-1 items-center  h-11 max-w-2xl  rounded-lg overflow-hidden">
+              {/* Search Input */}
+              <input
+                type="text"
+                value={search}
+                onChange={(e)=>setSearch(e.target.value)}
+                placeholder="Search products..."
+                className="flex-1 h-full px-4 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400"
+              />
+              {/* Search Button */}
+              <button
+                type="submit"
+                className="flex items-center justify-center w-12 h-10 mr-1 rounded-full bg-[#002D62] text-white hover:bg-[#0055B3] transition-colors"
+              >
+                <i className="fa-solid fa-magnifying-glass"></i>
+              </button>
+            </form>
           </div>
 
           {/* User Actions */}
@@ -163,8 +189,8 @@ const { user, setUser, authLoading}=useAuth();
             </Link>
 
             {/* Auth Button (Logout / Account) */}
-            {!authLoading && (
-              user ? (
+            {!authLoading &&
+              (user ? (
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -194,8 +220,7 @@ const { user, setUser, authLoading}=useAuth();
                     </span>
                   </div>
                 </button>
-              )
-            )}
+              ))}
 
             {/* Mobile Hamburger Toggle */}
             <button
@@ -203,7 +228,9 @@ const { user, setUser, authLoading}=useAuth();
               onClick={() => setIsMenuOpen((prev) => !prev)}
               className="lg:hidden flex items-center justify-center w-11 h-11 rounded-xl border-[1.5px] border-gray-200 text-gray-700 text-xl hover:border-gray-300 transition-all"
             >
-              <i className={`fa-solid ${isMenuOpen ? "fa-xmark" : "fa-bars"}`}></i>
+              <i
+                className={`fa-solid ${isMenuOpen ? "fa-xmark" : "fa-bars"}`}
+              ></i>
             </button>
           </div>
         </div>
@@ -216,7 +243,10 @@ const { user, setUser, authLoading}=useAuth();
               placeholder="Search products…"
               className="flex-1 h-full bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400"
             />
-            <button type="button" className="text-gray-500 hover:text-[#002D62]">
+            <button
+              type="button"
+              className="text-gray-500 hover:text-[#002D62]"
+            >
               <i className="fa-solid fa-magnifying-glass"></i>
             </button>
           </div>
@@ -225,8 +255,8 @@ const { user, setUser, authLoading}=useAuth();
         {/* Mobile Navigation Drawer */}
         {isMenuOpen && (
           <div className="lg:hidden py-4 border-t border-gray-100 flex flex-col gap-3">
-            {!authLoading && (
-              user ? (
+            {!authLoading &&
+              (user ? (
                 <button
                   onClick={() => {
                     handleLogout();
@@ -248,8 +278,7 @@ const { user, setUser, authLoading}=useAuth();
                   <i className="fa-regular fa-user"></i>
                   <span>My Account / Login</span>
                 </button>
-              )
-            )}
+              ))}
           </div>
         )}
       </div>

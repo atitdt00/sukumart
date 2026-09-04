@@ -6,20 +6,45 @@ import Category from "../../../models/Category";
 export async function GET(request) {
   try {
     await dbConnect();
+
     const { searchParams } = new URL(request.url);
+
     const category_id = searchParams.get("category_id");
+
     const search = searchParams.get("search");
-    const filter = {};
+
+    let query = {};
+
     if (category_id) {
-      filter.category_id = category_id;
+      query.category_id = category_id;
     }
+
     if (search) {
-      filter.name = {
-        $regex: search,
-        $options: "i",
+      query = {
+        $or: [
+          {
+            name: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            description: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            slug: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ],
       };
     }
-    const products = await Product.find(filter)
+
+    const products = await Product.find(query)
       .populate({
         path: "category_id",
         select: "name slug parent_id",
@@ -52,22 +77,20 @@ export async function POST(request) {
   try {
     await dbConnect();
 
-    const formData= await request.formData();
-    
-    const name= formData.get("name");
-    const slug= formData.get("slug");
-    const price= Number(formData.get("price"));
-    const stock= Number(formData.get("stock"));
-    const category_id= formData.get("category_id") || null;
+    const formData = await request.formData();
 
-  const file = formData.get("thumbnail");
-  let thumbnail= "";
-  if(file && file.size> 0){
-    const bytes= await file.arrayBuffer();
-    const buffer= Buffer.from(bytes);
-  }
+    const name = formData.get("name");
+    const slug = formData.get("slug");
+    const price = Number(formData.get("price"));
+    const stock = Number(formData.get("stock"));
+    const category_id = formData.get("category_id") || null;
 
-
+    const file = formData.get("thumbnail");
+    let thumbnail = "";
+    if (file && file.size > 0) {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+    }
 
     //required field
     if (!name || !slug || !category_id || price === undefined || !thumbnail) {
