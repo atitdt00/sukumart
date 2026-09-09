@@ -52,18 +52,19 @@ export async function POST(request) {
     }
 
     //check parent category exists
-    if(parent_id){
-        const parentCategory= await Category.findById(parent_id);
-        if(!parentCategory){
-            return NextResponse.json({
-                success: false,
-                 message: "Parent category not found",
-
-            },
-        {
+    if (parent_id) {
+      const parentCategory = await Category.findById(parent_id);
+      if (!parentCategory) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Parent category not found",
+          },
+          {
             status: 404,
-        })
-        }
+          },
+        );
+      }
     }
 
     const newCategory = new Category({

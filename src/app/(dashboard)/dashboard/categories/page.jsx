@@ -4,13 +4,14 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { createCategory, deleteCategory, getCategories, updateCategory } from "../../../../Services/Category_Service";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editId, setEditId] = useState(null);
+  const [editSlug, setEditSlug] = useState(null);
 
   // REACT HOOK FORM
   const {
@@ -22,12 +23,10 @@ export default function CategoriesPage() {
   } = useForm({ defaultValues: { name: "", slug: "", parent_id: "" } });
   const fetchCategories = async () => {
     try {
-      const response = await axios("/api/categories");
-      const data = await response.data;
+      setLoading(true);
+      const response = await getCategories();
 
-      if (data.success) {
-        setCategories(data.categories);
-      }
+      setCategories(response.categories || []);
     } catch (error) {
       console.error("Categories error:", error);
     } finally {
@@ -45,15 +44,15 @@ export default function CategoriesPage() {
         parent_id: data.parent_id || null,
       };
       let response;
-      if (editId) {
-        response = await axios.put(`/api/categories/${editId}`, categoryData);
+      if (editSlug) {
+        response = await updateCategory(editSlug, categoryData);
       } else {
-        response = await axios.post(`/api/categories`, categoryData);
+        response = await createCategory(categoryData);
       }
 
-      if (response.data.success) {
+      if (response.success) {
         toast.success(
-          editId
+          editSlug
             ? "Category updated successfully"
             : "Category created successfully",
         );
@@ -66,7 +65,7 @@ export default function CategoriesPage() {
         parent_id: "",
       });
 
-      setEditId(null);
+      setEditSlug(null);
     } catch (error) {
       const message = error.response?.data?.message || "something went wrong";
       toast.error(message);
@@ -76,17 +75,17 @@ export default function CategoriesPage() {
   };
 
   //delete Category
-  const handleDelete = async (id) => {
+  const handleDelete = async (slug) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this Category?",
     );
     if (!confirmDelete) return;
     try {
-      const response = await axios.delete(`/api/categories/${id}`);
-      if (response.data.success) {
+      const response = await deleteCategory(slug);
+      if (response.success) {
         toast.success("Category deleted successfully");
 
-        setCategories((prev) => prev.filter((category) => category._id !== id));
+        setCategories((prev) => prev.filter((category) => category.slug !== slug));
       }
     } catch (error) {
       toast.error(error.response?.data.message || " Failed to delete category");
@@ -95,14 +94,14 @@ export default function CategoriesPage() {
 
   // ========================= // OPEN ADD MODAL // ========================= //
   const openAddModal = () => {
-    setEditId(null);
+    setEditSlug(null);
     reset({ name: "", slug: "", parent_id: "" });
     setShowModal(true);
   };
 
   // ========================= // OPEN EDIT MODAL // ========================= //
   const openEditModal = (category) => {
-    setEditId(category._id);
+    setEditSlug(category.slug);
     reset({
       name: category.name || "",
       slug: category.slug || "",
@@ -153,9 +152,7 @@ export default function CategoriesPage() {
 
                   <th className="text-left px-5 py-4 text-sm">Slug</th>
 
-                  <th className="text-left px-5 py-4 text-sm">
-                    Category
-                  </th>
+                  <th className="text-left px-5 py-4 text-sm">Category</th>
 
                   <th className="text-left px-5 py-4 text-sm">Created</th>
 
@@ -196,7 +193,7 @@ export default function CategoriesPage() {
                         </button>
 
                         <button
-                          onClick={() => handleDelete(category._id)}
+                          onClick={() => handleDelete(category.slug)}
                           className="text-red-600 text-sm"
                         >
                           Delete
@@ -221,7 +218,7 @@ export default function CategoriesPage() {
               {" "}
               <h2 className="text-xl font-bold text-gray-800">
                 {" "}
-                {editId ? "Edit Category" : "Add Category"}{" "}
+                {editSlug ? "Edit Category" : "Add Category"}{" "}
               </h2>{" "}
               <button
                 onClick={() => setShowModal(false)}
@@ -265,10 +262,11 @@ export default function CategoriesPage() {
                   placeholder="e.g. electronics"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
                   {...register("slug", {
-    required: "Slug is required",
-    onChange: (e) => {
-      setValue("slug", e.target.value.toLowerCase());
-                  }})}
+                    required: "Slug is required",
+                    onChange: (e) => {
+                      setValue("slug", e.target.value.toLowerCase());
+                    },
+                  })}
                 />
                 {errors.slug && (
                   <p className="text-red-500 text-xs mt-1">
@@ -290,7 +288,7 @@ export default function CategoriesPage() {
                   {" "}
                   <option value=""> Main Category </option>{" "}
                   {categories
-                    .filter((category) => category._id !== editId)
+                    .filter((category) => category._id !== editSlug)
                     .map((category) => (
                       <option key={category._id} value={category._id}>
                         {" "}
@@ -318,7 +316,7 @@ export default function CategoriesPage() {
                   {" "}
                   {saving
                     ? "Saving..."
-                    : editId
+                    : editSlug
                       ? "Update Category"
                       : "Create Category"}{" "}
                 </button>{" "}

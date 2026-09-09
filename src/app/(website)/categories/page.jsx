@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -13,12 +12,10 @@ function Page() {
 
   const fetchCategories = async () => {
     try {
-      setLoading(true)
-      const data = await getCategories();
+      setLoading(true);
+      const response = await getCategories();
 
-
-      // Your API returns { success: true, categories: [...] }
-      setCategories(data || []);
+      setCategories(response.categories || []);
     } catch (error) {
       console.error("Category API error:", error);
     } finally {
@@ -35,7 +32,6 @@ function Page() {
       {/* PAGE HERO */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 pb-8">
         <div className="bg-gradient-to-r from-[#002D62] to-[#0055B3] rounded-2xl px-6 sm:px-10 py-8 sm:py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 relative overflow-hidden">
-
           {/* Decorative rings */}
           <div className="absolute -right-10 -top-10 w-64 h-64 rounded-full border-[40px] border-white/5 pointer-events-none" />
 
@@ -58,7 +54,6 @@ function Page() {
 
           <div className="flex items-center gap-3 text-sm font-semibold text-white/80 bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 shrink-0">
             <i className="fa-solid fa-layer-group text-[#F4C542]" />
-
             {categories.length} categories
           </div>
         </div>
@@ -66,7 +61,6 @@ function Page() {
 
       {/* MAIN CONTENT */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
-
         {/* Section Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -81,7 +75,6 @@ function Page() {
 
           {/* View Toggle */}
           <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg p-1">
-
             <button
               onClick={() => setView("grid")}
               className={`flex items-center justify-center w-8 h-8 rounded-md text-sm transition-all ${
@@ -103,7 +96,6 @@ function Page() {
             >
               <i className="fa-solid fa-list" />
             </button>
-
           </div>
         </div>
 
@@ -140,7 +132,6 @@ function Page() {
                     : "group relative bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-5 hover:border-blue-200 hover:shadow-lg transition-all duration-200"
                 }
               >
-
                 {/* Decorative Circle */}
                 <div className="absolute top-0 right-0 w-28 h-28 rounded-full bg-blue-50 -translate-y-10 translate-x-10 group-hover:bg-blue-100 transition-colors" />
 
@@ -152,9 +143,13 @@ function Page() {
                       : "relative w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 text-xl overflow-hidden shrink-0"
                   }
                 >
-                  {category.image ? ( 
+                  {/* {category.image ? (
                     <Image
-                      src={category.image}
+                      src={
+                        category.image
+                          ? `/image/products/${category.image}`
+                          : "/image/products/mobile_1.jpg"
+                      }
                       alt={category.name}
                       width={200}
                       height={200}
@@ -162,12 +157,11 @@ function Page() {
                     />
                   ) : (
                     <i className="fa-solid fa-layer-group" />
-                  )}
+                  )} */}
                 </div>
 
                 {/* Category Information */}
                 <div className="flex-1 relative">
-
                   <h3 className="font-bold text-gray-800 text-base leading-tight group-hover:text-[#002D62] transition-colors">
                     {category.name}
                   </h3>
@@ -181,20 +175,16 @@ function Page() {
                   <p className="text-gray-400 text-xs mt-1">
                     Explore {category.name}
                   </p>
-
                 </div>
 
                 {/* Arrow */}
                 <div className="relative flex items-center justify-between">
-
                   <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
                     View products
                   </span>
 
                   <i className="fa-solid fa-arrow-right ml-3 text-[11px] text-gray-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
-
                 </div>
-
               </Link>
             ))}
           </div>
@@ -202,7 +192,6 @@ function Page() {
 
         {/* PROMO BANNER */}
         <div className="mt-10 bg-[#F4C542] rounded-2xl px-6 sm:px-10 py-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
-
           <div className="absolute -left-6 -bottom-6 w-32 h-32 rounded-full bg-black/5 pointer-events-none" />
 
           <div>
@@ -212,10 +201,8 @@ function Page() {
 
             <p className="text-[#002D62]/70 text-sm mt-1">
               Sign up and get{" "}
-              <strong className="text-[#002D62]">
-                15% off
-              </strong>{" "}
-              your first order across all categories.
+              <strong className="text-[#002D62]">15% off</strong> your first
+              order across all categories.
             </p>
           </div>
 
@@ -226,7 +213,6 @@ function Page() {
             Create Account
             <i className="fa-solid fa-arrow-right text-xs" />
           </Link>
-
         </div>
       </div>
     </>
@@ -234,4 +220,3 @@ function Page() {
 }
 
 export default Page;
-

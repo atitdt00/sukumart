@@ -9,16 +9,13 @@ import { toast } from "react-toastify";
 import { useModal } from "../../../context/ModalContext";
 import { useRouter } from "next/navigation";
 
-
-
 function page() {
-  const [checkingAuth, setCheckingAuth]=useState(false);
-  const {openLogin}=useModal()
-  const router=useRouter()
-  
+  const [checkingAuth, setCheckingAuth] = useState(false);
+  const { openLogin } = useModal();
+  const router = useRouter();
+
   const { cart, removeFromCart, decreaseQuantity, increaseQuantity } =
     useCart();
-
 
   // Subtotal
   const subtotal = cart.reduce(
@@ -38,33 +35,31 @@ function page() {
   // Total
   const total = subtotal + shipping + tax;
 
-
   //checkout Authentication handler
-  const handleCheckout=async()=>{
-    try{
+  const handleCheckout = async () => {
+    try {
       setCheckingAuth(true);
 
-      const user= await getCurrentUser();
+      const user = await getCurrentUser();
 
-      if(!user?.success){
+      if (!user?.success) {
         toast.error("please login before proceeding to checkout");
         openLogin();
         return;
       }
-      router.push("/checkout")
-
-    }catch(error){
-      console.error("Authentication error",error)
-      if(error.response?.status === 401){
-        toast.error("please login before proceeding to checkout")
+      router.push("/checkout");
+    } catch (error) {
+      console.error("Authentication error", error);
+      if (error.response?.status === 401) {
+        toast.error("please login before proceeding to checkout");
         openLogin();
         return;
       }
       toast.error("Something went wrong");
-    }finally{
-      setCheckingAuth(false)
+    } finally {
+      setCheckingAuth(false);
     }
-  }
+  };
 
   return (
     <>
@@ -110,9 +105,9 @@ function page() {
                 >
                   <Image
                     src={
-                      product.thumbnail?.startsWith("https")
-                        ? product.thumbnail
-                        : product.thumbnail || "/image/products/mobile_1.jpg"
+                      product.thumbnail
+                        ? `/image/products/${product.thumbnail}`
+                        : "/image/products/mobile_1.jpg"
                     }
                     alt={product.name}
                     className="w-full sm:w-32 h-32 object-cover rounded-xl"
@@ -204,10 +199,13 @@ function page() {
                 disabled={checkingAuth}
                 className="block w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition text-center"
               >
-                {checkingAuth? "Checking...":"Proceed to Checkout"}
+                {checkingAuth ? "Checking..." : "Proceed to Checkout"}
               </button>
 
-              <Link href={"/categories"}  className="block w-full mt-6 border border-gray-300 hover:bg-gray-50 py-3 rounded-xl font-medium transition text-center">
+              <Link
+                href={"/categories"}
+                className="block w-full mt-6 border border-gray-300 hover:bg-gray-50 py-3 rounded-xl font-medium transition text-center"
+              >
                 Continue Shopping
               </Link>
             </div>

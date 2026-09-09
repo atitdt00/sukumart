@@ -26,11 +26,7 @@ const ProductSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
-    images: [
-      {
-        type: String,
-      },
-    ],
+   
     stock: {
       type: Number,
       default: 0,
@@ -43,6 +39,7 @@ const ProductSchema = new mongoose.Schema(
     gallery: [
       {
         type: String,
+        default: [],
       },
     ],
 

@@ -5,6 +5,13 @@ import Image from "next/image";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import {
+  createProduct,
+  deleteProduct,
+  getProducts,
+  updateProduct,
+} from "../../../../Services/Product_Services";
+import { getCategories } from "../../../../Services/Category_Service";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
@@ -39,10 +46,13 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get("/api/products");
 
-      if (response.data.success) {
-        setProducts(response.data.products);
+      setLoading(true);
+
+      const response = await getProducts();
+
+      if (response.success) {
+        setProducts(response.products);
       }
     } catch (error) {
       console.error("Products error:", error);
@@ -57,10 +67,10 @@ export default function ProductsPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get("/api/categories");
+      const response = await getCategories();
 
-      if (response.data.success) {
-        setCategories(response.data.categories);
+      if (response.success) {
+        setCategories(response.categories);
       }
     } catch (error) {
       console.error("Categories error:", error);
@@ -176,17 +186,23 @@ export default function ProductsPage() {
         formData.append("thumbnail", data.thumbnail[0]);
       }
 
+      if(data.gallery?.length> 0){
+        Array.from(data.gallery).forEach((file)=>{
+          formData.append("gallery", file);
+        })
+      }
+
       let response;
 
       if (editId) {
         // UPDATE PRODUCT
-        response = await axios.put(`/api/products/${editId}`, formData);
+        response = await updateProduct(editId, formData);
       } else {
         // CREATE PRODUCT
-        response = await axios.post("/api/products", formData);
+        response = await createProduct(formData);
       }
 
-      if (response.data.success) {
+      if (response.success) {
         toast.success(
           editId
             ? "Product updated successfully"
@@ -226,9 +242,9 @@ export default function ProductsPage() {
     if (!confirmDelete) return;
 
     try {
-      const response = await axios.delete(`/api/products/${id}`);
+      const response = await deleteProduct(id);
 
-      if (response.data.success) {
+      if (response.success) {
         toast.success("Product deleted successfully");
 
         setProducts((prev) => prev.filter((product) => product._id !== id));
@@ -304,9 +320,8 @@ export default function ProductsPage() {
                         <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
                           <Image
                             src={
-                              product.thumbnail &&
-                              product.thumbnail.startsWith("/image/")
-                                ? product.thumbnail
+                              product.thumbnail
+                                ? `/image/products/${product.thumbnail}`
                                 : "/image/products/mobile_1.jpg"
                             }
                             alt={product.name || "Product"}
@@ -386,7 +401,7 @@ export default function ProductsPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-lg rounded-xl p-6 mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white w-full max-w-lg rounded-xl p-6 mx-4 max-h-[95vh] overflow-y-auto">
             {/* MODAL HEADER */}
 
             <div className="flex items-center justify-between mb-5">
@@ -407,108 +422,111 @@ export default function ProductsPage() {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {/* NAME */}
+              <div className="flex items-center justify-between gap-2 lg:gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Product Name
+                  </label>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Product Name
-                </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Samsung Galaxy"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                    {...register("name", {
+                      required: "Product name is required",
+                    })}
+                  />
 
-                <input
-                  type="text"
-                  placeholder="e.g. Samsung Galaxy"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                  {...register("name", {
-                    required: "Product name is required",
-                  })}
-                />
+                  {errors.name && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.name.message}
+                    </p>
+                  )}
+                </div>
 
-                {errors.name && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.name.message}
-                  </p>
-                )}
+                {/* SLUG */}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Slug
+                  </label>
+
+                  <input
+                    type="text"
+                    placeholder="e.g. samsung-galaxy"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                    {...register("slug", {
+                      required: "Slug is required",
+                      onChange: (e) => {
+                        setValue("slug", e.target.value.toLowerCase());
+                      },
+                    })}
+                  />
+
+                  {errors.slug && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.slug.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              {/* SLUG */}
+              <div className="flex items-center justify-between gap-2 lg:gap-4">
+                {/* PRICE */}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Slug
-                </label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Price
+                  </label>
 
-                <input
-                  type="text"
-                  placeholder="e.g. samsung-galaxy"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                  {...register("slug", {
-                    required: "Slug is required",
-                    onChange: (e) => {
-                      setValue("slug", e.target.value.toLowerCase());
-                    },
-                  })}
-                />
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 50000"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                    {...register("price", {
+                      required: "Price is required",
+                      min: {
+                        value: 0,
+                        message: "Price cannot be negative",
+                      },
+                    })}
+                  />
 
-                {errors.slug && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.slug.message}
-                  </p>
-                )}
-              </div>
+                  {errors.price && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.price.message}
+                    </p>
+                  )}
+                </div>
 
-              {/* PRICE */}
+                {/* STOCK */}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Price
-                </label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Stock
+                  </label>
 
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 50000"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                  {...register("price", {
-                    required: "Price is required",
-                    min: {
-                      value: 0,
-                      message: "Price cannot be negative",
-                    },
-                  })}
-                />
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 20"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                    {...register("stock", {
+                      required: "Stock is required",
+                      min: {
+                        value: 0,
+                        message: "Stock cannot be negative",
+                      },
+                    })}
+                  />
 
-                {errors.price && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.price.message}
-                  </p>
-                )}
-              </div>
-
-              {/* STOCK */}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Stock
-                </label>
-
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="e.g. 20"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                  {...register("stock", {
-                    required: "Stock is required",
-                    min: {
-                      value: 0,
-                      message: "Stock cannot be negative",
-                    },
-                  })}
-                />
-
-                {errors.stock && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.stock.message}
-                  </p>
-                )}
+                  {errors.stock && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.stock.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* CATEGORY */}
@@ -540,26 +558,49 @@ export default function ProductsPage() {
                 )}
               </div>
 
-              {/* THUMBNAIL */}
+              <div className="flex items-center justify-between gap-2 lg:gap-4">
+                {/* THUMBNAIL */}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Thumbnail URL
-                </label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Thumbnail URL
+                  </label>
 
-                <input
-                  type="file"
-                  placeholder="/image/products/mobile_1.jpg"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                  {...register("thumbnail", {
-                    required: !editId ? "Product image is required" : false,
-                  })}
-                />
-                {errors.thumbnail && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.thumbnail.message}
-                  </p>
-                )}
+                  <input
+                    type="file"
+                    placeholder="jpg"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                    {...register("thumbnail", {
+                      required: !editId ? "Product image is required" : false,
+                    })}
+                  />
+                  {errors.thumbnail && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.thumbnail.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Gallery
+                  </label>
+
+                  <input
+                    type="file"
+                    placeholder="jpg"
+                    multiple
+                    accept="image/*"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                    {...register("gallery", {
+                      required: !editId ? "Product image is required" : false,
+                    })}
+                  />
+                  {errors.gallery && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.gallery.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* BUTTONS */}

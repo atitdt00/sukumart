@@ -60,17 +60,16 @@ export async function GET(request, { params }) {
   }
 }
 
-// =========================
-// PUT - UPDATE CATEGORY
-// =========================
-export async function PUT(request, { params }) {
+export async function DELETE(request, { params }) {
   try {
     await dbConnect();
 
-    const { id } = await params;
+    const { slug } = await params;
 
-    // Find existing category
-    const category = await Category.findOne(id);
+    // Find category using slug
+    const category = await Category.findOne({
+      slug: slug.toLowerCase(),
+    });
 
     if (!category) {
       return NextResponse.json(
@@ -78,47 +77,95 @@ export async function PUT(request, { params }) {
           success: false,
           message: "Category not found",
         },
+        { status: 404 },
+      );
+    }
+
+    // Check if products belong to this category
+    const productCount = await Product.countDocuments({
+      category_id: category._id,
+    });
+
+    if (productCount > 0) {
+      return NextResponse.json(
         {
-          status: 404,
+          success: false,
+          message: `Cannot delete category. ${productCount} product(s) belong to this category.`,
         },
+        { status: 400 },
+      );
+    }
+
+    // Check if category has child categories
+    const childCount = await Category.countDocuments({
+      parent_id: category._id,
+    });
+
+    if (childCount > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Cannot delete category. ${childCount} child categor(y/ies) belong to this category.`,
+        },
+        { status: 400 },
+      );
+    }
+
+    // Delete category
+    await Category.findByIdAndDelete(category._id);
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Category deleted successfully",
+      },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.error("Delete category by slug error:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: error.message,
+      },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PUT(request, { params }) {
+  try {
+    await dbConnect();
+
+    const { slug } = await params;
+
+    const category = await Category.findOne({
+      slug: slug.toLowerCase()
+  });
+
+    if (!category) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Category not found",
+        },
+        { status: 404 }
       );
     }
 
     const body = await request.json();
 
-    const { name, Slug, image, parent_id } = body;
+    const { name, slug: newSlug,  image, parent_id } = body;
 
-    // Validate name
     if (!name) {
       return NextResponse.json(
         {
           success: false,
           message: "Category name is required",
         },
-        {
-          status: 400,
-        },
+        { status: 400 }
       );
-    }
-
-    // If newSlug is provided, check duplicate slug
-    if (Slug && Slug !== category.slug) {
-      const existingCategory = await Category.findOne({
-        slug: Slug.toLowerCase(),
-        _id: { $ne: category._id },
-      });
-
-      if (existingCategory) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Slug already exists",
-          },
-          {
-            status: 409,
-          },
-        );
-      }
     }
 
     // Check duplicate name
@@ -134,25 +181,38 @@ export async function PUT(request, { params }) {
             success: false,
             message: "Category name already exists",
           },
-          {
-            status: 409,
-          },
+          { status: 409 }
         );
       }
     }
 
-    // Check parent category
+    // Check duplicate slug
+    if (newSlug && newSlug.toLowerCase() !== category.slug) {
+      const existingSlug = await Category.findOne({
+        slug: newSlug.toLowerCase(),
+        _id: { $ne: category._id },
+      });
+
+      if (existingSlug) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Slug already exists",
+          },
+          { status: 409 }
+        );
+      }
+    }
+
+    // Check parent
     if (parent_id) {
-      // Prevent category becoming its own parent
       if (parent_id.toString() === category._id.toString()) {
         return NextResponse.json(
           {
             success: false,
             message: "Category cannot be its own parent",
           },
-          {
-            status: 400,
-          },
+          { status: 400 }
         );
       }
 
@@ -164,16 +224,16 @@ export async function PUT(request, { params }) {
             success: false,
             message: "Parent category not found",
           },
-          {
-            status: 404,
-          },
+          { status: 404 }
         );
       }
     }
 
-    // Update category
     category.name = name;
-    category.slug = slug ? slug.toLowerCase() : category.slug;
+
+    if (newSlug) {
+      category.slug = newSlug.toLowerCase();
+    }
 
     if (image !== undefined) {
       category.image = image;
@@ -189,9 +249,7 @@ export async function PUT(request, { params }) {
         message: "Category updated successfully",
         category,
       },
-      {
-        status: 200,
-      },
+      { status: 200 }
     );
   } catch (error) {
     console.error("Update category error:", error);
@@ -201,94 +259,7 @@ export async function PUT(request, { params }) {
         success: false,
         message: error.message,
       },
-      {
-        status: 500,
-      },
-    );
-  }
-}
-
-// =========================
-// DELETE CATEGORY
-// =========================
-export async function DELETE(request, { params }) {
-  try {
-    await dbConnect();
-
-    const { id } = await params;
-
-    // Find category
-    const category = await Category.findOne(id);
-
-    if (!category) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Category not found",
-        },
-        {
-          status: 404,
-        },
-      );
-    }
-
-    // Check whether category has products
-    const productCount = await Product.countDocuments({
-      category_id: category._id,
-    });
-
-    if (productCount > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `Cannot delete category. ${productCount} product(s) belong to this category.`,
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    // Check whether category has child categories
-    const childCount = await Category.countDocuments({
-      parent_id: category._id,
-    });
-
-    if (childCount > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `Cannot delete category. ${childCount} child categor(y/ies) belong to this category.`,
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    // Delete category
-    await Category.findByIdAndDelete(category._id);
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Category deleted successfully",
-      },
-      {
-        status: 200,
-      },
-    );
-  } catch (error) {
-    console.error("Delete category error:", error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: error.message,
-      },
-      {
-        status: 500,
-      },
+      { status: 500 }
     );
   }
 }

@@ -20,8 +20,7 @@ export async function GET(request) {
     }
 
     if (search) {
-      query = {
-        $or: [
+      query.$or= [
           {
             name: {
               $regex: search,
@@ -40,9 +39,11 @@ export async function GET(request) {
               $options: "i",
             },
           },
-        ],
-      };
-    }
+        ];
+      }
+    
+      
+    
 
     const products = await Product.find(query)
       .populate({
@@ -81,19 +82,28 @@ export async function POST(request) {
 
     const name = formData.get("name");
     const slug = formData.get("slug");
-    const price = Number(formData.get("price"));
-    const stock = Number(formData.get("stock"));
-    const category_id = formData.get("category_id") || null;
 
+    const priceValue = formData.get("price");
+    const stockValue = formData.get("stock");
+
+    const price = Number(priceValue);
+    const stock = Number(stockValue);
+
+
+    const category_id = formData.get("category_id") || null;
     const file = formData.get("thumbnail");
-    let thumbnail = "";
+    const galleryFiles= formData.getAll("gallery");
+
+    let thumbnail= "";
+
     if (file && file.size > 0) {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
+
+      thumbnail=file.name
     }
+    const gallery = galleryFiles.filter((file)=> file && file.size > 0).map((file)=> file.name)
 
     //required field
-    if (!name || !slug || !category_id || price === undefined || !thumbnail) {
+    if (!name || !slug || !category_id || !Number.isFinite(price) || !thumbnail) {
       return NextResponse.json(
         {
           success: false,
@@ -139,11 +149,9 @@ export async function POST(request) {
       slug,
       category_id,
       price,
-      discountPrice,
       thumbnail,
-      gallery,
       stock,
-      description,
+      gallery
     });
 
     //Populate category in response

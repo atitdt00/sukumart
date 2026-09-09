@@ -16,6 +16,7 @@ export async function GET(request) {
       );
     }
 
+
     const decodedData = JSON.parse(
       Buffer.from(data, "base64").toString("utf-8"),
     );
@@ -25,6 +26,9 @@ export async function GET(request) {
         new URL("/payment-failed", request.url),
       );
     }
+
+
+     // Update payment status
 
     const order = await Order.findByIdAndUpdate(
       decodedData.transaction_uuid,
@@ -38,8 +42,10 @@ export async function GET(request) {
       },
     );
 
+
+    // Redirect to frontend success page
     return NextResponse.redirect(
-      new URL(`/order-success?order=${order._id}`, request.url),
+      new URL(`/payment-success?order=${order.orderId}`, request.url),
     );
   } catch (error) {
     console.error(error);

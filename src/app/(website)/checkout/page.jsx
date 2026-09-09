@@ -152,7 +152,7 @@ import { initiateEsewaPayment, initiateKhaltiPayment } from "../../../Services/P
         }
 
         //take orderId
-        const orderId= response.order._id;
+        const orderId= response.order.orderId;
 
         if(formData.paymentMethod ==="cod"){
           clearCart();

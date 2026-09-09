@@ -4,8 +4,11 @@ import React, { useEffect, useState } from "react";
 import { getCategories } from "../../../Services/Category_Service";
 import { getProducts } from "../../../Services/Product_Services";
 import { toast } from "react-toastify";
+import { useCart } from "../../../context/CartContext";
 
 function page() {
+  const { cart, addToCart } = useCart();
+
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
@@ -15,8 +18,8 @@ function page() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const data = await getCategories();
-      setCategories(data);
+      const response = await getCategories();
+      setCategories(response.categories);
     } catch (error) {
       console.error("Category Api error", error);
     } finally {
@@ -27,12 +30,12 @@ function page() {
   //get products
   const fetchProducts = async () => {
     try {
-      const data = await getProducts();
-      if (!data) {
-        toast.error("There are no products");
+      const response = await getProducts();
+      if (!response) {
+        toast.error("There are no products"); 
         return;
       }
-      setProducts(data);
+      setProducts(response.products);
     } catch (error) {
       console.error(error);
     }
@@ -137,9 +140,9 @@ function page() {
                     <div className="relative overflow-hidden">
                       <Image
                         src={
-                          product.thumbnail?.startsWith("http")
-                            ? "/image/products/shoes_1.jpg"
-                            : product.thumbnail || "/image/products/shoes_1.jpg"
+                          product.thumbnail
+                            ? `/image/products/${product.thumbnail}`
+                            : "/image/products/mobile_1.jpg"
                         }
                         className="w-full h-64 object-cover hover:scale-105 transition duration-500"
                         alt={product.name || "product"}
@@ -198,7 +201,10 @@ function page() {
                           )}
                         </div>
 
-                        <button className="bg-[#004A90] text-white px-4 py-2 rounded-xl">
+                        <button
+                          onClick={() => addToCart(product)}
+                          className="bg-[#004A90] text-white px-4 py-2 rounded-xl"
+                        >
                           Add Cart
                         </button>
                       </div>

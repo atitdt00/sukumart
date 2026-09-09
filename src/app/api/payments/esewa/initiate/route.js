@@ -11,7 +11,7 @@ export async function POST(request) {
 
     console.log("eSewa orderId:", orderId);
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findOne({orderId: orderId.toUpperCase()});
 
     if (!order) {
       return NextResponse.json(
@@ -85,7 +85,7 @@ export async function POST(request) {
         success: false,
         message: "Failed to initiate eSewa payment",
       },
-      { status: 500 },
+      { status: 500 },  
     );
   }
 }

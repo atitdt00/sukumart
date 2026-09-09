@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardCard from "../../../Components/dashboard/DashboardCard";
 import { getDashboardStats } from "../../../Services/Dashboard_Service";
+import { toast } from "react-toastify";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -18,13 +19,12 @@ export default function DashboardPage() {
       setLoading(true)
       const data = await getDashboardStats();
 
-      console.log("Dashboard stats:", data);
-
       if (data.success) {
         setStats(data.stats);
       }
     } catch (error) {
       console.error("Dashboard API error:", error);
+      toast.error(error.response?.data?.message);
     } finally {
       setLoading(false);
     }

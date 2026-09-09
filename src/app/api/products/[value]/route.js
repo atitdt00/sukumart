@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 
@@ -7,50 +6,34 @@ import Product from "../../../../models/Product";
 import Category from "../../../../models/Category";
 
 // ============================================
-// GET SINGLE PRODUCT
-// GET /api/products/:id
+// GET PRODUCT BY SLUG
+// GET /api/products/:value
 // ============================================
 
 export async function GET(request, { params }) {
   try {
     await dbConnect();
 
-    const { id } = await params;
+    const { value } = await params;
 
-    // Validate Product ID
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Invalid Product ID",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    // Find product
-    const product = await Product.findById(id).populate({
+    const product = await Product.findOne({
+      slug: value.toLowerCase(),
+    }).populate({
       path: "category_id",
       select: "name slug parent_id",
-
       populate: {
         path: "parent_id",
         select: "name slug",
       },
     });
 
-    // Product not found
     if (!product) {
       return NextResponse.json(
         {
           success: false,
           message: "Product not found",
         },
-        {
-          status: 404,
-        }
+        { status: 404 }
       );
     }
 
@@ -59,9 +42,7 @@ export async function GET(request, { params }) {
         success: true,
         product,
       },
-      {
-        status: 200,
-      }
+      { status: 200 }
     );
   } catch (error) {
     console.error("GET product error:", error);
@@ -71,55 +52,50 @@ export async function GET(request, { params }) {
         success: false,
         message: error.message,
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
 
 // ============================================
-// UPDATE PRODUCT
-// PUT /api/products/:id
+// UPDATE PRODUCT BY ID
+// PUT /api/products/:value
 // ============================================
 
 export async function PUT(request, { params }) {
   try {
     await dbConnect();
 
-    const { id } = await params;
+    const { value } = await params;
 
-    // Validate Product ID
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    // Here value is the MongoDB ID
+    if (!mongoose.Types.ObjectId.isValid(value)) {
       return NextResponse.json(
         {
           success: false,
           message: "Invalid Product ID",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
-    // Get request body
-    const body = await request.json();
+    const formData = await request.formData();
 
-    // Check category if category_id is being changed
-    if (body.category_id) {
-      if (!mongoose.Types.ObjectId.isValid(body.category_id)) {
+    const category_id = formData.get("category_id");
+
+    // Check category
+    if (category_id) {
+      if (!mongoose.Types.ObjectId.isValid(category_id)) {
         return NextResponse.json(
           {
             success: false,
             message: "Invalid Category ID",
           },
-          {
-            status: 400,
-          }
+          { status: 400 }
         );
       }
 
-      const category = await Category.findById(body.category_id);
+      const category = await Category.findById(category_id);
 
       if (!category) {
         return NextResponse.json(
@@ -127,17 +103,22 @@ export async function PUT(request, { params }) {
             success: false,
             message: "Category not found",
           },
-          {
-            status: 404,
-          }
+          { status: 404 }
         );
       }
     }
 
-    // Update product
+    const updateData = {
+      name: formData.get("name"),
+      slug: formData.get("slug"),
+      price: formData.get("price"),
+      stock: formData.get("stock"),
+      category_id,
+    };
+
     const product = await Product.findByIdAndUpdate(
-      id,
-      body,
+      value,
+      updateData,
       {
         new: true,
         runValidators: true,
@@ -145,23 +126,19 @@ export async function PUT(request, { params }) {
     ).populate({
       path: "category_id",
       select: "name slug parent_id",
-
       populate: {
         path: "parent_id",
         select: "name slug",
       },
     });
 
-    // Product not found
     if (!product) {
       return NextResponse.json(
         {
           success: false,
           message: "Product not found",
         },
-        {
-          status: 404,
-        }
+        { status: 404 }
       );
     }
 
@@ -171,9 +148,7 @@ export async function PUT(request, { params }) {
         message: "Product updated successfully",
         product,
       },
-      {
-        status: 200,
-      }
+      { status: 200 }
     );
   } catch (error) {
     console.error("PUT product error:", error);
@@ -183,50 +158,42 @@ export async function PUT(request, { params }) {
         success: false,
         message: error.message,
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
 
 // ============================================
-// DELETE PRODUCT
-// DELETE /api/products/:id
+// DELETE PRODUCT BY ID
+// DELETE /api/products/:value
 // ============================================
 
 export async function DELETE(request, { params }) {
   try {
     await dbConnect();
 
-    const { id } = await params;
+    const { value } = await params;
 
-    // Validate Product ID
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    // Here value is the MongoDB ID
+    if (!mongoose.Types.ObjectId.isValid(value)) {
       return NextResponse.json(
         {
           success: false,
           message: "Invalid Product ID",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
-    // Delete product
-    const product = await Product.findByIdAndDelete(id);
+    const product = await Product.findByIdAndDelete(value);
 
-    // Product not found
     if (!product) {
       return NextResponse.json(
         {
           success: false,
           message: "Product not found",
         },
-        {
-          status: 404,
-        }
+        { status: 404 }
       );
     }
 
@@ -236,9 +203,7 @@ export async function DELETE(request, { params }) {
         message: "Product deleted successfully",
         product,
       },
-      {
-        status: 200,
-      }
+      { status: 200 }
     );
   } catch (error) {
     console.error("DELETE product error:", error);
@@ -248,9 +213,7 @@ export async function DELETE(request, { params }) {
         success: false,
         message: error.message,
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
