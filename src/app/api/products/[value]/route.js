@@ -33,7 +33,7 @@ export async function GET(request, { params }) {
           success: false,
           message: "Product not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -42,7 +42,7 @@ export async function GET(request, { params }) {
         success: true,
         product,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("GET product error:", error);
@@ -52,7 +52,7 @@ export async function GET(request, { params }) {
         success: false,
         message: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -75,7 +75,7 @@ export async function PUT(request, { params }) {
           success: false,
           message: "Invalid Product ID",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -91,7 +91,7 @@ export async function PUT(request, { params }) {
             success: false,
             message: "Invalid Category ID",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -103,27 +103,57 @@ export async function PUT(request, { params }) {
             success: false,
             message: "Category not found",
           },
-          { status: 404 }
+          { status: 404 },
         );
       }
     }
 
-    const updateData = {
-      name: formData.get("name"),
-      slug: formData.get("slug"),
-      price: formData.get("price"),
-      stock: formData.get("stock"),
-      category_id,
-    };
+    // Build update data dynamically
+    const updateData = {};
 
-    const product = await Product.findByIdAndUpdate(
-      value,
-      updateData,
-      {
-        new: true,
-        runValidators: true,
-      }
-    ).populate({
+    if (formData.has("name")) {
+      updateData.name = formData.get("name");
+    }
+
+    if (formData.has("slug")) {
+      updateData.slug = formData.get("slug");
+    }
+
+    if (formData.has("price")) {
+      updateData.price = Number(formData.get("price"));
+    }
+
+    if (formData.has("stock")) {
+      updateData.stock = Number(formData.get("stock"));
+    }
+
+    if (formData.has("category_id")) {
+      updateData.category_id = category_id;
+    }
+
+    if (formData.has("description")) {
+      updateData.description = formData.get("description");
+    }
+
+    if (formData.has("variants")) {
+      updateData.variants = JSON.parse(formData.get("variants") || "[]");
+    }
+
+    if (formData.has("isFeatured")) {
+      updateData.isFeatured = formData.get("isFeatured") === "true";
+    }
+
+    if(formData.has("isSale")){
+      updateData.isSale= formData.get("isSale")=== "true";
+    }
+      if(formData.has("isDeal")){
+      updateData.isDeal= formData.get("isDeal")=== "true";
+    }
+
+    const product = await Product.findByIdAndUpdate(value, updateData, {
+      new: true,
+      runValidators: true,
+    }).populate({
       path: "category_id",
       select: "name slug parent_id",
       populate: {
@@ -138,7 +168,7 @@ export async function PUT(request, { params }) {
           success: false,
           message: "Product not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -148,7 +178,7 @@ export async function PUT(request, { params }) {
         message: "Product updated successfully",
         product,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("PUT product error:", error);
@@ -158,7 +188,7 @@ export async function PUT(request, { params }) {
         success: false,
         message: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -181,7 +211,7 @@ export async function DELETE(request, { params }) {
           success: false,
           message: "Invalid Product ID",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -193,7 +223,7 @@ export async function DELETE(request, { params }) {
           success: false,
           message: "Product not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -203,7 +233,7 @@ export async function DELETE(request, { params }) {
         message: "Product deleted successfully",
         product,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("DELETE product error:", error);
@@ -213,7 +243,7 @@ export async function DELETE(request, { params }) {
         success: false,
         message: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

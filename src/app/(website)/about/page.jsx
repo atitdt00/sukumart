@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 function page() {
@@ -23,9 +24,9 @@ function page() {
             </h2>
 
             <p className="text-gray-600 text-sm leading-relaxed">
-              SukuMart is a modern e-commerce platform designed to bring
+              SukuMart is Link modern e-commerce platform designed to bring
               electronics, fashion, groceries, and daily essentials together in
-              one place. We focus on fast delivery, trusted sellers, and a
+              one place. We focus on fast delivery, trusted sellers, and Link
               seamless shopping experience.
             </p>
 
@@ -35,18 +36,18 @@ function page() {
             </p>
 
             <div className="flex gap-3 pt-2">
-              <a
-                href="#"
+              <Link
+                href="/shop"
                 className="px-4 py-2 bg-[#002D62] text-white rounded-lg text-sm hover:bg-[#0055B3] transition"
               >
                 Start Shopping
-              </a>
-              <a
-                href="contact.html"
+              </Link>
+              <Link
+                href="/contact"
                 className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:border-[#0055B3] hover:text-[#0055B3] transition"
               >
                 Contact Us
-              </a>
+              </Link>
             </div>
           </div>
 

@@ -85,10 +85,11 @@ export async function POST(request) {
 
     const priceValue = formData.get("price");
     const stockValue = formData.get("stock");
-
+    
     const price = Number(priceValue);
     const stock = Number(stockValue);
-
+    
+    const description = formData.get("description");
 
     const category_id = formData.get("category_id") || null;
     const file = formData.get("thumbnail");
@@ -151,7 +152,8 @@ export async function POST(request) {
       price,
       thumbnail,
       stock,
-      gallery
+      gallery,
+      description,
     });
 
     //Populate category in response

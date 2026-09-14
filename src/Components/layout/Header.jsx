@@ -27,18 +27,16 @@ function Header() {
 
   //search products
   const handleSearch = (e) => {
-   
-      e.preventDefault();
+    e.preventDefault();
 
-      const value = search.trim();
+    const value = search.trim();
 
-      if (!value) {
-        router.push("/search");
-        return;
-      }
+    if (!value) {
+      router.push("/search");
+      return;
+    }
 
-      router.push(`/search?q=${encodeURIComponent(value)}`);
-    
+    router.push(`/search?q=${encodeURIComponent(value)}`);
   };
 
   // Handle Logout User
@@ -59,8 +57,8 @@ function Header() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const data = await getCategories();
-      setCategories(data || []);
+      const response = await getCategories();
+      setCategories(response.categories || []);
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Failed to fetch categories",
@@ -97,7 +95,10 @@ function Header() {
               alt="Sukumart"
               width={160}
               height={40}
-              className="h-8 w-auto object-contain"
+              className="h-8 w-auto object-contain w-[110px]
+sm:w-[125px]
+md:w-[145px]
+lg:w-[160px]"
             />
           </Link>
 
@@ -146,12 +147,15 @@ function Header() {
               )}
             </div>
 
-            <form onSubmit={handleSearch} className="flex flex-1 items-center  h-11 max-w-2xl  rounded-lg overflow-hidden">
+            <form
+              onSubmit={handleSearch}
+              className="flex flex-1 items-center  h-11 max-w-2xl  rounded-lg overflow-hidden"
+            >
               {/* Search Input */}
               <input
                 type="text"
                 value={search}
-                onChange={(e)=>setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search products..."
                 className="flex-1 h-full px-4 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400"
               />
@@ -189,38 +193,56 @@ function Header() {
             </Link>
 
             {/* Auth Button (Logout / Account) */}
-            {!authLoading &&
-              (user ? (
+            {!authLoading && user ? (
+              <div className="hidden lg:flex items-center gap-2">
+                {/* USER ACCOUNT */}
                 <button
                   type="button"
-                  onClick={handleLogout}
-                  className="hidden lg:flex items-center gap-2.5 h-11 px-4 rounded-xl border-[1.5px] border-red-200 text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+                  onClick={() => router.push("/account")}
+                  className="flex items-center gap-2.5 h-11 px-4 rounded-xl border-[1.5px] border-gray-200 text-gray-800 hover:border-[#0055B3] hover:text-[#002D62] hover:bg-blue-50/50 transition-all cursor-pointer"
                 >
-                  <i className="fa-solid fa-right-from-bracket text-[17px]"></i>
+                  <i className="fa-regular fa-user text-[17px]"></i>
+
                   <div className="flex flex-col items-start leading-none">
                     <span className="text-[11px] text-gray-400 font-normal">
                       Hello, {user.name || "User"}
                     </span>
-                    <span className="text-[13px] font-bold mt-0.5">Logout</span>
-                  </div>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={openLogin}
-                  className="hidden lg:flex items-center gap-2.5 h-11 px-4 rounded-xl border-[1.5px] border-gray-200 text-gray-800 hover:border-[#0055B3] hover:text-[#002D62] hover:bg-blue-50/50 transition-all cursor-pointer"
-                >
-                  <i className="fa-regular fa-user text-[17px]"></i>
-                  <div className="flex flex-col items-start leading-none">
-                    <span className="text-[11px] text-gray-400 font-normal">
-                      Hello,
-                    </span>
+
                     <span className="text-[13px] font-bold mt-0.5">
                       My Account
                     </span>
                   </div>
                 </button>
-              ))}
+
+                {/* LOGOUT */}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex items-center justify-center w-11 h-11 rounded-xl border-[1.5px] border-red-200 text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+                  title="Logout"
+                >
+                  <i className="fa-solid fa-right-from-bracket text-[17px]"></i>
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={openLogin}
+                className="hidden lg:flex items-center gap-2.5 h-11 px-4 rounded-xl border-[1.5px] border-gray-200 text-gray-800 hover:border-[#0055B3] hover:text-[#002D62] hover:bg-blue-50/50 transition-all cursor-pointer"
+              >
+                <i className="fa-regular fa-user text-[17px]"></i>
+
+                <div className="flex flex-col items-start leading-none">
+                  <span className="text-[11px] text-gray-400 font-normal">
+                    Hello,
+                  </span>
+
+                  <span className="text-[13px] font-bold mt-0.5">
+                    My Account
+                  </span>
+                </div>
+              </button>
+            )}
 
             {/* Mobile Hamburger Toggle */}
             <button

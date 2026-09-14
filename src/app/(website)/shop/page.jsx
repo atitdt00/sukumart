@@ -5,9 +5,10 @@ import { getCategories } from "../../../Services/Category_Service";
 import { getProducts } from "../../../Services/Product_Services";
 import { toast } from "react-toastify";
 import { useCart } from "../../../context/CartContext";
+import Link from "next/link";
 
 function page() {
-  const { cart, addToCart } = useCart();
+  const { addToCart } = useCart();
 
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +33,7 @@ function page() {
     try {
       const response = await getProducts();
       if (!response) {
-        toast.error("There are no products"); 
+        toast.error("There are no products");
         return;
       }
       setProducts(response.products);
@@ -41,16 +42,19 @@ function page() {
     }
   };
 
-  const filteredProducts = selectedCategory
-    ? products.filter((product) => {
+  const filteredProducts = products.filter((product) => 
+        product.isSale === true).filter((product)=> {
+          if(!selectedCategory) return true;
+        
+
         const categoryId =
           typeof product.category_id === "object"
             ? product.category_id._id
             : product.category_id;
 
         return categoryId === selectedCategory;
-      })
-    : products;
+      });
+   
 
   useEffect(() => {
     fetchCategories();
@@ -137,78 +141,83 @@ function page() {
                     key={product._id}
                     className="bg-white rounded-2xl overflow-hidden border hover:shadow-xl transition"
                   >
-                    <div className="relative overflow-hidden">
-                      <Image
-                        src={
-                          product.thumbnail
-                            ? `/image/products/${product.thumbnail}`
-                            : "/image/products/mobile_1.jpg"
-                        }
-                        className="w-full h-64 object-cover hover:scale-105 transition duration-500"
-                        alt={product.name || "product"}
-                        // fill
-                        // sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        width={200}
-                        height={220}
-                      />
+                    <Link href={`/products/${product.slug}`}>
+                      <div className="relative overflow-hidden">
+                        <Image
+                          src={
+                            product.thumbnail
+                              ? `/image/products/${product.thumbnail}`
+                              : "/image/products/sukumartlogo.jpg"
+                          }
+                          className="w-full h-64 object-fit hover:scale-105 transition duration-500"
+                          alt={product.name || "product"}
+                          // fill
+                          // sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          width={200}
+                          height={220}
+                        />
 
-                      <span className="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full">
-                        SALE
-                      </span>
-                    </div>
-
-                    <div className="p-5">
-                      <h3 className="font-bold text-lg">{product.name}</h3>
-
-                      <div className="text-yellow-400 mt-2">
-                        ★★★★★
-                        <span className="text-gray-500 text-sm">(120)</span>
+                        <span className="absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full">
+                          SALE
+                        </span>
                       </div>
 
-                      <p className="text-gray-500 text-sm mt-3">
-                        {product.description || "Lightweight and comfortable"}
-                      </p>
+                      <div className="p-5">
+                        <h3 className="font-bold text-lg">{product.name}</h3>
 
-                      <div className="flex justify-between items-center mt-5">
-                        <div>
-                          {product.discountPrice > 0 &&
-                          product.discountPrice < product.price ? (
-                            <>
-                              {/* Discount Price */}
-                              <span className="text-xl font-bold text-[#004A90]">
-                                Rs. {product.discountPrice.toLocaleString()}
-                              </span>
-
-                              {/* Original Price */}
-                              <span className="text-gray-400 line-through ml-2 text-sm">
-                                Rs. {product.price.toLocaleString()}
-                              </span>
-
-                              {/* Discount Percentage */}
-                              <span className="block text-xs text-red-500 mt-1">
-                                {Math.round(
-                                  ((product.price - product.discountPrice) /
-                                    product.price) *
-                                    100,
-                                )}
-                                % OFF
-                              </span>
-                            </>
-                          ) : (
-                            <span className="text-xl font-bold text-[#004A90]">
-                              Rs. {product.price.toLocaleString()}
-                            </span>
-                          )}
+                        <div className="text-yellow-400 mt-2">
+                          ★★★★★
+                          <span className="text-gray-500 text-sm">(120)</span>
                         </div>
 
-                        <button
-                          onClick={() => addToCart(product)}
-                          className="bg-[#004A90] text-white px-4 py-2 rounded-xl"
-                        >
-                          Add Cart
-                        </button>
+                        <p className="text-gray-500 text-sm mt-3">
+                          {product.description || "Lightweight and comfortable"}
+                        </p>
+
+                        <div className="flex justify-between items-center mt-5">
+                          <div>
+                            {product.discountPrice > 0 &&
+                            product.discountPrice < product.price ? (
+                              <>
+                                {/* Discount Price */}
+                                <span className="text-xl font-bold text-[#004A90]">
+                                  Rs. {product.discountPrice.toLocaleString()}
+                                </span>
+
+                                {/* Original Price */}
+                                <span className="text-gray-400 line-through ml-2 text-sm">
+                                  Rs. {product.price.toLocaleString()}
+                                </span>
+
+                                {/* Discount Percentage */}
+                                <span className="block text-xs text-red-500 mt-1">
+                                  {Math.round(
+                                    ((product.price - product.discountPrice) /
+                                      product.price) *
+                                      100,
+                                  )}
+                                  % OFF
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-xl font-bold text-[#004A90]">
+                                Rs. {product.price.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();  
+                              addToCart(product)}}
+                            className="bg-[#004A90] text-white px-4 py-2 rounded-xl hover:bg-[#0055B3] active:scale-[0.98] transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                          >
+                            Add Cart
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </Link>
                   </div>
                 ))
               ) : (

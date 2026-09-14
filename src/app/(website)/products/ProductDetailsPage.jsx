@@ -6,17 +6,11 @@ import Link from "next/link";
 import { getProductBySlug } from "../../../Services/Product_Services";
 import { useCart } from "../../../context/CartContext";
 
-
-
-
-
 // ======================================================
 // PRODUCT DETAIL PAGE
 // ======================================================
 
-function ProductDetailsPage ({slug}){
-
-
+function ProductDetailsPage({ slug }) {
   // Get the product ID from the dynamic [id] route
 
   // Get addToCart function from CartContext
@@ -33,6 +27,7 @@ function ProductDetailsPage ({slug}){
 
   const [selectedImage, setSelectedImage] = useState(null);
 
+  const [selectedVariants, setSelectedVariants] = useState({});
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -60,14 +55,10 @@ function ProductDetailsPage ({slug}){
     }
   }, [slug]);
 
-
-
-
-
   // ======================================================
   // LOADING STATE
   // ======================================================
- 
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-10">
@@ -88,7 +79,7 @@ function ProductDetailsPage ({slug}){
   // ======================================================
   // PRODUCT NOT FOUND
   // ======================================================
- 
+
   if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
@@ -153,14 +144,28 @@ function ProductDetailsPage ({slug}){
   // Adds the selected product to the cart based on
   // the quantity selected by the user.
   // ======================================================
-  const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart(product);
+ const handleAddToCart = () => {
+  // Check whether all variants are selected
+  if (product.variants?.length > 0) {
+    const allVariantsSelected = product.variants.every(
+      (variant) => selectedVariants[variant.name]
+    );
+
+    if (!allVariantsSelected) {
+      alert("Please select all product options.");
+      return;
     }
+  }
+
+  const productWithVariants = {
+    ...product,
+    selectedVariants,
   };
 
-
-
+  for (let i = 0; i < quantity; i++) {
+    addToCart(productWithVariants);
+  }
+};
 
   // ======================================================
   // MAIN UI
@@ -196,7 +201,7 @@ function ProductDetailsPage ({slug}){
                 selectedImage ||
                 (product.thumbnail
                   ? `/image/products/${product.thumbnail}`
-                  : "/image/products/mobile_1.jpg")
+                  : "/image/products/sukulogo.jpg")
               }
               alt={product.name || "Product"}
               fill
@@ -305,6 +310,53 @@ function ProductDetailsPage ({slug}){
             </p>
           </div>
 
+          {/* PRODUCT VARIANTS */}
+
+          {product.variants?.length > 0 && (
+            <div className="mt-6 border-t pt-6 space-y-5">
+              <h2 className="font-bold text-lg">Select Options</h2>
+
+              {product.variants.map((variant, index) => (
+                <div key={index} className="flex items-center gap-4 flex-wrap">
+                  {/* Variant name */}
+
+                  <p className="font-semibold text-gray-700 mb-2">
+                    {variant.name} :
+                  </p>
+
+                  {/* Variant options */}
+
+                  <div className="flex flex-wrap gap-2">
+                    {variant.options?.map((option, optionIndex) => {
+                      const isSelected =
+                        selectedVariants[variant.name] === option;
+
+                      return (
+                        <button
+                          key={optionIndex}
+                          type="button"
+                          onClick={() => {
+                            setSelectedVariants((prev) => ({
+                              ...prev,
+                              [variant.name]: option,
+                            }));
+                          }}
+                          className={`px-4 py-2 rounded-lg border transition ${
+                            isSelected
+                              ? "border-[#0055B3] bg-[#0055B3] text-white"
+                              : "border-gray-300 text-gray-700 hover:border-[#0055B3] hover:text-[#0055B3]"
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Quantity Selector */}
           {product.stock > 0 && (
             <div className="mt-6">
@@ -363,4 +415,3 @@ function ProductDetailsPage ({slug}){
 }
 
 export default ProductDetailsPage;
-

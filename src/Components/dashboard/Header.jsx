@@ -13,7 +13,7 @@ export default function Header() {
       if(response.success){
         toast.success(response.message|| "Logout successfully")
         //redirect to login page
-        router.push("/login")
+        router.push("/")
 
         //refresh server client state;
         router.refresh();

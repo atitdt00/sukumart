@@ -34,6 +34,10 @@ function LoginModal() {
         email: data.email,
         password: data.password,
       });
+      if (!response?.success) {
+        toast.error(response?.message || "Login failed");
+        return;
+      }
 
       reset({
         email: "",
@@ -46,12 +50,12 @@ function LoginModal() {
         router.refresh();
       } else {
         router.push("/");
-        router.refresh()
+        router.refresh();
       }
       toast.success(response.message || "Login successfully");
     } catch (error) {
       console.error(error);
-      toast.error(error.message || "Login failed !");
+      toast.error(error.response?.data?.message || "Login failed !");
     } finally {
       setLoading(false);
     }
@@ -144,7 +148,11 @@ function LoginModal() {
                   Remember me
                 </label>
 
-                <Link href="#" className="text-[#0055B3] hover:underline">
+                <Link
+                  href="/auth/forgot-password"
+                  onClick={closeLogin}
+                  className="text-[#0055B3] hover:underline"
+                >
                   Forgot password?
                 </Link>
               </div>
@@ -155,7 +163,7 @@ function LoginModal() {
                 disabled={loading}
                 className="w-full bg-[#002D62] hover:bg-[#0055B3] text-white py-3 rounded-xl font-semibold transition hover:-translate-y-0.5"
               >
-                {loading ? "logging..." : "login"}
+                {loading ? "logging In..." : "login"}
               </button>
             </form>
 

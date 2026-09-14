@@ -74,7 +74,7 @@ function page() {
                         src={
                           product.thumbnail
                             ? `/image/products/${product.thumbnail}`
-                            : "/image/products/mobile_1.jpg"
+                            : "/image/products/sukumartlogo.jpg"
                         }
                         alt={product.name}
                         fill

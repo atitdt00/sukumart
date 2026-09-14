@@ -61,7 +61,7 @@ export async function GET(request) {
 
       return NextResponse.redirect(
         new URL(
-          `/order-success?order=${order._id}`,
+          `/payment-success?order=${order._id}`,
           request.url
         )
       );

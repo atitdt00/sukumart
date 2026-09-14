@@ -17,7 +17,6 @@ function Page() {
     try {
       setLoading(true);
       const response = await getOrders();
-    
 
       if (!response.success) {
         toast.error(response.message || "Failed to fetch orders");
@@ -213,7 +212,23 @@ function Page() {
                             <div>
                               <p className="font-medium">{product.name}</p>
 
-                              <p className="text-sm text-gray-500">
+                              {/* SELECTED VARIANTS */}
+                              {product.selectedVariants &&
+                                Object.entries(product.selectedVariants).map(
+                                  ([name, value]) => (
+                                    <p
+                                      key={name}
+                                      className="text-sm text-gray-600 mt-1"
+                                    >
+                                      <span className="font-semibold">
+                                        {name}:
+                                      </span>{" "}
+                                      {value}
+                                    </p>
+                                  ),
+                                )}
+
+                              <p className="text-sm text-gray-500 mt-1">
                                 Qty: {product.quantity}
                               </p>
                             </div>

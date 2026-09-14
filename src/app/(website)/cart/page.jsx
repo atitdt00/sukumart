@@ -107,7 +107,7 @@ function page() {
                     src={
                       product.thumbnail
                         ? `/image/products/${product.thumbnail}`
-                        : "/image/products/mobile_1.jpg"
+                        : "/image/products/sukumartlogo.jpg"
                     }
                     alt={product.name}
                     className="w-full sm:w-32 h-32 object-cover rounded-xl"
@@ -115,7 +115,7 @@ function page() {
                     height={128}
                   />
 
-                  <div className="flex-1">
+                  <div className="flex-1 ">
                     <h3 className="font-semibold text-lg">{product.name}</h3>
                     <p className="text-gray-500 text-sm mt-1">
                       {product.description}
@@ -124,26 +124,38 @@ function page() {
                     <div className="flex flex-wrap items-center justify-between mt-4 gap-3">
                       <div className="flex items-center border rounded-lg overflow-hidden">
                         <button
-                          onClick={() => decreaseQuantity(product._id)}
+                          onClick={() => decreaseQuantity(product)}
                           className="px-3 py-2 hover:bg-gray-100"
                         >
                           -
                         </button>
                         <span className="px-4">{product.quantity}</span>
                         <button
-                          onClick={() => increaseQuantity(product._id)}
+                          onClick={() => increaseQuantity(product)}
                           className="px-3 py-2 hover:bg-gray-100"
                         >
                           +
                         </button>
                       </div>
+                      {product.selectedVariants &&
+                        Object.entries(product.selectedVariants).map(
+                          ([name, value]) => (
+                            <p
+                              key={name}
+                              className="text-sm text-gray-600 mt-1"
+                            >
+                              <span className="font-semibold">{name}:</span>{" "}
+                              {value}
+                            </p>
+                          ),
+                        )}
 
                       <div className="text-right">
                         <p className="font-bold text-blue-600">
                           Price {product.price?.toLocaleString()}{" "}
                         </p>
                         <button
-                          onClick={() => removeFromCart(product._id)}
+                          onClick={() => removeFromCart(product)}
                           className="text-red-500 text-sm hover:underline"
                         >
                           Remove

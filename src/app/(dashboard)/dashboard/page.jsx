@@ -4,19 +4,21 @@ import { useEffect, useState } from "react";
 import DashboardCard from "../../../Components/dashboard/DashboardCard";
 import { getDashboardStats } from "../../../Services/Dashboard_Service";
 import { toast } from "react-toastify";
+import { FaBucket } from "react-icons/fa6";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
     products: 0,
     categories: 0,
     users: 0,
+    orders: 0,
   });
 
   const [loading, setLoading] = useState(true);
 
   const fetchDashboardStats = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const data = await getDashboardStats();
 
       if (data.success) {
@@ -37,22 +39,15 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Dashboard
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
 
-        <p className="text-gray-500 mt-1">
-          Welcome to SukuMart dashboard
-        </p>
+        <p className="text-gray-500 mt-1">Welcome to SukuMart dashboard</p>
       </div>
 
       {loading ? (
-        <p className="text-gray-500">
-          Loading...
-        </p>
+        <p className="text-gray-500">Loading...</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-
           <DashboardCard
             title="Total Products"
             value={stats.products}
@@ -65,12 +60,11 @@ export default function DashboardPage() {
             icon="📂"
           />
 
-          <DashboardCard
-            title="Total Users"
-            value={stats.users}
-            icon="👥"
-          />
+          <DashboardCard title="Total Users" value={stats.users} icon="👥" />
 
+          <DashboardCard title="Total Orders" value={stats.orders} icon={<FaBucket />}  >
+            
+          </DashboardCard>
         </div>
       )}
     </div>

@@ -26,7 +26,7 @@ const ProductSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
-   
+
     stock: {
       type: Number,
       default: 0,
@@ -46,6 +46,37 @@ const ProductSchema = new mongoose.Schema(
     description: {
       type: String,
       default: "",
+    },
+
+    variants: {
+      type: [
+        {
+          name: {
+            type: String,
+            required: true,
+          },
+
+          options: {
+            type: [String],
+            default: [],
+          },
+        },
+      ],
+      default: [],
+    },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+
+    isDeal: {
+      type: Boolean,
+      default: false,
+    },
+
+    isSale: {
+      type: Boolean,
+      default: false,
     },
   },
   {

@@ -1,0 +1,83 @@
+"use client";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { forgotPassword } from "../../../../Services/Auth_Service";
+
+import { toast } from "react-toastify";
+
+function page() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm();    
+
+  const onSubmit = async (data) => {
+    try {
+      const response = await forgotPassword(data.email);
+      if (response.success) {
+        toast.success(response.message);
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Something went wrong");
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow">
+        <h1 className="text-2xl font-bold text-center mb-2">
+          Forgot Password?
+        </h1>
+
+        <p className="text-gray-500 text-center mb-6">
+          Enter your email and we&apos;ll send you a password reset link.
+        </p>
+
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+          <div>
+            <label className="block mb-1 font-medium">Email</label>
+
+            <input
+              type="email"
+              placeholder="Enter your email"
+              {...register("email", {
+                required: "Email is Required",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Enter a valid Email address",
+                },
+              })}
+              className="w-full border rounded-lg px-4 py-3 outline-none focus:border-blue-500"
+            />
+
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-[#0055B3] text-white py-3 rounded-lg font-semibold disabled:opacity-50"
+          >
+            {isSubmitting ? "Sending..." : "Send Reset Link"}
+          </button>
+        </form>
+
+        <div className="text-center mt-6">
+          <Link href="/" className="text-blue-600 hover:underline">
+            Back to home
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default page;

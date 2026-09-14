@@ -1,6 +1,36 @@
-import React from 'react'
+"use client"
+
+import { useForm } from 'react-hook-form'
+import { createContact } from '../../../Services/Contact_Service';
+import { toast } from 'react-toastify';
 
 function page() {
+
+    const { register, handleSubmit, reset, formState: {errors, isSubmitting},} =useForm();
+
+
+    const onSubmit=async(contactData)=>{
+      try{
+        const response= await createContact(contactData)
+
+        if(response.success){
+          toast.success("sent your Contact information !");
+        }
+        reset({
+          name: "",
+          email: "",
+          subject: "",
+          message: "",
+      })
+
+      }catch(error){
+        console.log(error);
+        toast.error(
+          error.response?.data?.message || "Something went wrong"
+        )
+
+      }
+    }
   return (
     <>
       
@@ -21,22 +51,44 @@ function page() {
     <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
       <h2 className="text-xl font-bold text-gray-800 mb-5">Send Message</h2>
 
-      <form className="space-y-4">
-        <input type="text" placeholder="Your Name"
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <input type="text" placeholder="Your Name" {...register("name", {required: "Name is Required"})}
           className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0055B3]" />
+          {errors.name && (
+            <p className='text-red-500 text-sm mt-1'>
+              {errors.name.message}
+            </p>
+          )}
 
-        <input type="email" placeholder="Your Email"
+        <input type="email" placeholder="Your Email" {...register("email", {required: "Email is Required"})}
           className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0055B3]" />
+          {errors.email && (
+            <p className='text-red-500 text-sm mt-1'> 
+              {errors.email.message}
+            </p>
+          )}
 
-        <input type="text" placeholder="Subject"
+
+        <input type="text" placeholder="Subject" {...register("subject", {required: "Subject is Required"})}
           className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0055B3]" />
-
-        <textarea rows="5" placeholder="Your Message"
+          {errors.subject && (
+            <p className='text-red-500 text-sm mt-1'>
+              {errors.subject.message}
+            </p>
+          )}
+          
+        <textarea rows="5" placeholder="Your Message" {...register("message", {required: "Message is Required"})}
           className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0055B3]"></textarea>
 
-        <button type="submit"
+            {errors.message && (
+            <p className='text-red-500 text-sm mt-1'>
+              {errors.message.message}  
+            </p>
+          )}
+
+        <button type="submit" disabled={isSubmitting}
           className="w-full bg-[#002D62] text-white py-3 rounded-lg font-semibold hover:bg-[#0055B3] transition">
-          Send Message
+          {isSubmitting? "Sending..." : "Send Message"}
         </button>
       </form>
     </div>

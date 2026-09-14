@@ -61,6 +61,16 @@ const orderSchema = new mongoose.Schema(
         thumbnail: {
           type: String,
         },
+        gallery:[{
+            type:String,
+            default: [],
+        }],
+
+        selectedVariants:{
+          type: Map,
+          of: String,
+          default: {},
+        }
       },
     ],
 

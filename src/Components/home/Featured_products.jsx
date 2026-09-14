@@ -18,7 +18,7 @@ function Featured_products() {
     try {
       setLoading(true);
       const response = await getProducts();
-      if(response.success){
+      if (response.success) {
         setProducts(response.products || []);
       }
     } catch (error) {
@@ -27,6 +27,11 @@ function Featured_products() {
       setLoading(false);
     }
   };
+
+  //feature products
+  const featuredProducts = products
+    .filter((product) => product.isFeatured === true)
+    .slice(0, 8);
 
   useEffect(() => {
     fetchProducts();
@@ -81,7 +86,7 @@ function Featured_products() {
           ? Array.from({ length: 8 }).map((_, index) => (
               <ProductSkeleton key={index} />
             ))
-          : products.slice(0, 8).map((product) => (
+          : featuredProducts.map((product) => (
               <div
                 key={product._id}
                 className="group bg-white rounded-xl border border-gray-100 hover:shadow-lg transition overflow-hidden flex flex-col"
@@ -93,12 +98,12 @@ function Featured_products() {
                       src={
                         product.thumbnail
                           ? `/image/products/${product.thumbnail}`
-                          : "/image/products/mobile_1.jpg"
+                          : "/image/products/sukumartlogo.jpg"
                       }
                       alt={product.name || "Product"}
                       width={300}
                       height={300}
-                      className="object-cover"
+                      className="w-full object-fit hover:scale-105 transition duration-500"
                     />
                     {/* Discount */}
                     {product.discountPrice > 0 &&
@@ -121,6 +126,7 @@ function Featured_products() {
                         e.preventDefault();
                         e.stopPropagation();
                       }}
+                      disabled={product.stock <= 0}
                       aria-label="Add Galaxy A35 5G to wishlist"
                       className="absolute top-2 right-2 w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-500 transition"
                     >
@@ -168,7 +174,13 @@ function Featured_products() {
                         <button
                           type="button"
                           aria-label="Add product to cart"
-                          onClick={() => addToCart(product)}
+                          onClick={(e) => {
+                            
+                            e.preventDefault()
+                            e.stopPropagation();
+
+                            addToCart(product);
+                          }}
                           disabled={product.stock <= 0}
                           className="w-full h-10 rounded-lg bg-[#002D62] text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#0055B3] active:scale-[0.98] transition disabled:bg-gray-300 disabled:cursor-not-allowed"
                         >

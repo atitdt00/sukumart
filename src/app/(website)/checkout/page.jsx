@@ -135,6 +135,8 @@ import { initiateEsewaPayment, initiateKhaltiPayment } from "../../../Services/P
             price: item.discountPrice > 0 ? item.discountPrice : item.price,
             quantity: item.quantity,
             thumbnail: item.thumbnail,
+
+            selectedVariants: item.selectedVariants || {},
           })),
           subtotal,
           shipping,
@@ -157,7 +159,7 @@ import { initiateEsewaPayment, initiateKhaltiPayment } from "../../../Services/P
         if(formData.paymentMethod ==="cod"){
           clearCart();
           toast.success("Order placed successfully");
-          router.push(`/order-success?order=${orderId}`);
+          router.push(`/payment-success?order=${orderId}`);
           return;
         }
 
@@ -408,16 +410,20 @@ import { initiateEsewaPayment, initiateKhaltiPayment } from "../../../Services/P
               {/* PRODUCTS */}
               <div className="space-y-4 max-h-64 overflow-y-auto">
                 {cart.map((item) => (
-                  <div key={item._id} className="flex justify-between gap-4">
-                    <div>
+                  <div key={`${item._id}-${JSON.stringify(item.selectedVariants || {})}`} className="flex justify-between gap-4">
+                    <div className="space-y-5">
                       <p className="font-medium">{item.name}</p>
+
+                     
+
 
                       <p className="text-sm text-gray-500">
                         Qty: {item.quantity}
                       </p>
                     </div>
 
-                    <span className="font-medium">
+                   <div className="flex flex-col gap-2">
+                     <span className="font-medium">
                       Rs.{" "}
                       {(
                         (item.discountPrice > 0
@@ -425,6 +431,15 @@ import { initiateEsewaPayment, initiateKhaltiPayment } from "../../../Services/P
                           : item.price) * item.quantity
                       ).toLocaleString()}
                     </span>
+                     {/* selected Variants */}
+                    {
+                      item.selectedVariants && 
+                      Object.entries(item.selectedVariants).map(([name, value])=>
+                      (
+                        <p key={name} className="text-sm text-gray-500">{name} : {value}  </p>
+                      ))
+                    }
+                   </div>
                   </div>
                 ))}
               </div>

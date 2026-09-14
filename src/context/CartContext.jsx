@@ -7,17 +7,28 @@ const CartContext = createContext();
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
 
+  //check whether two cart items are the same product
+  //with the same selected variants
+  const isSameCartItem = (item, product) => {
+    return (
+      item._id === product._id &&
+      JSON.stringify(item.selectedVariants || {}) ===
+        JSON.stringify(product.selectedVariants || {})
+    );
+  };
+
   //add product to cart
   const addToCart = (product) => {
     setCart((currentCart) => {
       const existingProduct = currentCart.find(
-        (item) => item._id === product._id,
+        (item) =>
+          isSameCartItem(item, product)
       );
 
       //product already exists
       if (existingProduct) {
         return currentCart.map((item) =>
-          item._id === product._id
+          isSameCartItem(item, product)
             ? { ...item, quantity: item.quantity + 1 }
             : item,
         );
@@ -35,9 +46,9 @@ export function CartProvider({ children }) {
   };
 
   //Remove product completely from cart
-  const removeFromCart = (productId) => {
+  const removeFromCart = (ProductId) => {
     setCart((currentCart) =>
-      currentCart.filter((item) => item._id !== productId),
+      currentCart.filter((item) => !isSameCartItem(item, ProductId)),
     );
   };
 
@@ -45,7 +56,7 @@ export function CartProvider({ children }) {
   const increaseQuantity = (ProductId) => {
     setCart((prevCart) =>
       prevCart.map((item) =>
-        item._id === ProductId
+        isSameCartItem(item, ProductId)
           ? { ...item, quantity: item.quantity + 1 }
           : item,
       ),
@@ -56,10 +67,10 @@ export function CartProvider({ children }) {
   const decreaseQuantity = (ProductId) => {
     setCart((prevCart) =>
       prevCart.map((item) =>
-        item._id === ProductId
+       isSameCartItem(item, ProductId)
           ? { ...item, quantity: item.quantity - 1 }
           : item,
-      ),
+      ).filter((item)=> item.quantity > 0),
     );
   };
 

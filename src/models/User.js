@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     resetTokenExpire: {
-      type: Date(),
+      type: Date,
       default: null,
     },
   },

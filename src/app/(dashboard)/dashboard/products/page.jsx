@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import axios from "axios";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import {
@@ -30,6 +29,7 @@ export default function ProductsPage() {
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -39,6 +39,9 @@ export default function ProductsPage() {
       stock: "",
       category_id: "",
       thumbnail: "",
+      gallery: [],
+      description: "",
+      variants: [],
     },
   });
 
@@ -46,7 +49,6 @@ export default function ProductsPage() {
 
   const fetchProducts = async () => {
     try {
-
       setLoading(true);
 
       const response = await getProducts();
@@ -93,6 +95,9 @@ export default function ProductsPage() {
       stock: "",
       category_id: "",
       thumbnail: "",
+      gallery: [],
+      description: "",
+      variants: [],
     });
 
     setShowModal(true);
@@ -110,6 +115,9 @@ export default function ProductsPage() {
       stock: product.stock || "",
       category_id: product.category_id?._id || "",
       thumbnail: product.thumbnail || "",
+      gallery: [],
+      description: product.description || "",
+      variants: product.variants || [],
     });
 
     setShowModal(true);
@@ -129,26 +137,36 @@ export default function ProductsPage() {
       if (!editId) {
         // Check whether product already exists
         const existingProduct = products.find(
-          (product) => product.slug?.toLowerCase() === data.slug.toLowerCase(),
+          (product) => product.slug?.toLowerCase() === data.slug?.toLowerCase(),
         );
 
         // If product already exists → only increase stock
         if (existingProduct) {
           const newStock = Number(existingProduct.stock || 0) + enteredStock;
 
-          const response = await axios.put(
-            `/api/products/${existingProduct._id}`,
-            {
-              name: existingProduct.name,
-              slug: existingProduct.slug,
-              price: existingProduct.price,
-              stock: newStock,
-              category_id: existingProduct.category_id?._id || null,
-              thumbnail: existingProduct.thumbnail || "",
-            },
+          const formData = new FormData();
+
+          formData.append("name", existingProduct.name);
+          formData.append("slug", existingProduct.slug);
+          formData.append("price", existingProduct.price);
+          formData.append("stock", newStock);
+          formData.append(
+            "category_id",
+            existingProduct.category_id?._id || "",
+          );
+          formData.append("description", existingProduct.description || "");
+          formData.append(
+            "variants",
+            JSON.stringify(existingProduct.variants || []),
+          );
+          formData.append(
+            "isFeatured",
+            String(existingProduct.isFeatured || false),
           );
 
-          if (response.data.success) {
+          const response = await updateProduct(existingProduct._id, formData);
+
+          if (response.success) {
             toast.success(
               `Product already exists. Stock increased to ${newStock}.`,
             );
@@ -163,6 +181,9 @@ export default function ProductsPage() {
               stock: "",
               category_id: "",
               thumbnail: "",
+              gallery: [],
+              description: "",
+              variants: [],
             });
           }
 
@@ -181,15 +202,17 @@ export default function ProductsPage() {
       formData.append("price", Number(data.price));
       formData.append("stock", enteredStock);
       formData.append("category_id", data.category_id || "");
+      formData.append("description", data.description || "");
+      formData.append("variants", JSON.stringify(data.variants || []));
 
       if (data.thumbnail?.[0]) {
         formData.append("thumbnail", data.thumbnail[0]);
       }
 
-      if(data.gallery?.length> 0){
-        Array.from(data.gallery).forEach((file)=>{
+      if (data.gallery?.length > 0) {
+        Array.from(data.gallery).forEach((file) => {
           formData.append("gallery", file);
-        })
+        });
       }
 
       let response;
@@ -221,6 +244,10 @@ export default function ProductsPage() {
           stock: "",
           category_id: "",
           thumbnail: "",
+          gallery: [],
+          description: "",
+          variants: [],
+          isFeatured: false,
         });
       }
     } catch (error) {
@@ -253,6 +280,38 @@ export default function ProductsPage() {
       console.error("Delete product error:", error);
 
       toast.error(error.response?.data?.message || "Failed to delete product");
+    }
+  };
+
+  //Toggle Featured Product
+
+  const toggleFeatured = async (product, feature) => {
+    try {
+      const newValue = !product[feature];
+
+      const formData = new FormData();
+
+      formData.append(feature, String(newValue));
+
+      const response = await updateProduct(product._id, formData);
+      if (response.success) {
+        setProducts((prevProducts) =>
+          prevProducts.map((item) =>
+            item._id === product._id ? { ...item, [feature]: newValue } : item,
+          ),
+        );
+      }
+
+      toast.success(
+        newValue
+          ? `${feature} added to featured`
+          : `${feature} removed from featured`
+      );
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.message || "Failed to update featured status",
+      );
     }
   };
 
@@ -306,6 +365,12 @@ export default function ProductsPage() {
 
                   <th className="text-left px-5 py-4 text-sm">Stock</th>
 
+                  <th className="text-left px-5 py-4 text-sm">Variants</th>
+
+                  <th className="text-center px-5 py-4 text-sm">
+                    Product Features
+                  </th>
+
                   <th className="text-left px-5 py-4 text-sm">Action</th>
                 </tr>
               </thead>
@@ -322,11 +387,13 @@ export default function ProductsPage() {
                             src={
                               product.thumbnail
                                 ? `/image/products/${product.thumbnail}`
-                                : "/image/products/mobile_1.jpg"
+                                : "/image/products/sukumartlogo.jpg"
                             }
                             alt={product.name || "Product"}
-                            fill
+                            
                             className="object-cover"
+                            width={300}
+                            height={300}
                           />
                         </div>
 
@@ -368,6 +435,79 @@ export default function ProductsPage() {
                           ? `${product.stock} available`
                           : "Out of stock"}
                       </span>
+                    </td>
+
+                    {/* VARIANTS */}
+
+                    <td className="px-5 py-4">
+                      {product.variants?.length > 0 ? (
+                        <div className="space-y-1">
+                          {product.variants.map((variant, index) => (
+                            <div key={index} className="text-sm">
+                              <span className="font-medium text-gray-700">
+                                {variant.name}:
+                              </span>{" "}
+                              <span className="text-gray-500">
+                                {variant.options?.join(", ")}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400">
+                          No variants
+                        </span>
+                      )}
+                    </td>
+
+                    {/* FEATURED */}
+
+                    {/* FEATURES */}
+
+                    <td className="px-5 py-4">
+                      <div className="flex flex-col gap-2">
+                        {/* FEATURED */}
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={product.isFeatured || false}
+                            onChange={() =>
+                              toggleFeatured(product, "isFeatured")
+                            }
+                            className="w-4 h-4"
+                          />
+
+                          <span className="text-sm text-gray-700">
+                            Featured
+                          </span>
+                        </label>
+
+                        {/* SALE */}
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={product.isSale || false}
+                            onChange={() => toggleFeatured(product, "isSale")}
+                            className="w-4 h-4"
+                          />
+
+                          <span className="text-sm text-gray-700">Sale</span>
+                        </label>
+
+                        {/* HOT DEAL */}
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={product.isDeal || false}
+                            onChange={() => toggleFeatured(product, "isDeal")}
+                            className="w-4 h-4"
+                          />
+
+                          <span className="text-sm text-gray-700">
+                            Hot Deal
+                          </span>
+                        </label>
+                      </div>
                     </td>
 
                     {/* ACTION */}
@@ -558,12 +698,142 @@ export default function ProductsPage() {
                 )}
               </div>
 
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+
+                <textarea
+                  rows={5}
+                  placeholder="Enter product description..."
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  {...register("description", {
+                    required: "Product description is required",
+                  })}
+                />
+
+                {errors.description && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.description.message}
+                  </p>
+                )}
+              </div>
+
+              {/* VARIANTS */}
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Product Variants
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const currentVariants = watch("variants") || [];
+
+                      setValue("variants", [
+                        ...currentVariants,
+                        {
+                          name: "",
+                          options: [],
+                        },
+                      ]);
+                    }}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    + Add Variant
+                  </button>
+                </div>
+
+                {(watch("variants") || []).map((variant, index) => (
+                  <div
+                    key={index}
+                    className="border border-gray-200 rounded-lg p-4 mb-3"
+                  >
+                    <div className="flex gap-3 items-start">
+                      {/* Variant Name */}
+
+                      <div className="flex-1">
+                        <label className="block text-xs text-gray-500 mb-1">
+                          Variant Name
+                        </label>
+
+                        <input
+                          type="text"
+                          placeholder="e.g. Color"
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                          value={variant.name}
+                          onChange={(e) => {
+                            const variants = [...watch("variants")];
+
+                            variants[index] = {
+                              ...variants[index],
+                              name: e.target.value,
+                            };
+
+                            setValue("variants", variants);
+                          }}
+                        />
+                      </div>
+
+                      {/* Variant Options */}
+
+                      <div className="flex-1">
+                        <label className="block text-xs text-gray-500 mb-1">
+                          Options
+                        </label>
+
+                        <input
+                          type="text"
+                          placeholder="e.g. Black, White, Blue"
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                          value={variant.options.join(", ")}
+                          onChange={(e) => {
+                            const options = e.target.value
+                              .split(",")
+                              .map((option) => option.trim())
+                              .filter(Boolean);
+
+                            const variants = [...watch("variants")];
+
+                            variants[index] = {
+                              ...variants[index],
+                              options,
+                            };
+
+                            setValue("variants", variants);
+                          }}
+                        />
+                      </div>
+
+                      {/* Remove Variant */}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const variants = [...watch("variants")];
+
+                          variants.splice(index, 1);
+
+                          setValue("variants", variants);
+                        }}
+                        className="text-red-500 mt-6"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               <div className="flex items-center justify-between gap-2 lg:gap-4">
                 {/* THUMBNAIL */}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Thumbnail URL
+                    Thumbnail
                   </label>
 
                   <input
@@ -591,9 +861,7 @@ export default function ProductsPage() {
                     multiple
                     accept="image/*"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                    {...register("gallery", {
-                      required: !editId ? "Product image is required" : false,
-                    })}
+                    {...register("gallery")}
                   />
                   {errors.gallery && (
                     <p className="text-red-500 text-xs mt-1">
