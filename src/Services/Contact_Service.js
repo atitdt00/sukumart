@@ -1,12 +1,11 @@
 
 import axios from "axios";
-const API = process.env.NEXT_PUBLIC_API_URL;
 
 // Send contact message
 export const createContact = async (contactData) => {
   try {
     const response = await axios.post(
-      `${API}/api/contact`,
+      `/api/contact`,
       contactData
     );
 
@@ -25,7 +24,7 @@ export const createContact = async (contactData) => {
 export const getContact = async () => {
   try {
     const response = await axios.get(
-      `${API}/api/contact`,
+      `/api/contact`,
     );
 
     return response.data;

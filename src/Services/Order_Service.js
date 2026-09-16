@@ -13,7 +13,7 @@ export const getOrders = async () => {
 
 export const trackOrder = async (orderId) => {
   try {
-    const response = await axios.get(`${API}/api/orders/${orderId}`);
+    const response = await axios.get(`/api/orders/${orderId}`);
     return response.data;
   } catch (error) {
     console.error("Track order API error:", error);
@@ -23,7 +23,7 @@ export const trackOrder = async (orderId) => {
 
 export const updateOrderStatus = async (orderId, status) => {
   try {
-    const response = await axios.put(`${API}/api/orders/${orderId}`, {
+    const response = await axios.put(`/api/orders/${orderId}`, {
       status,
     });
 
@@ -36,7 +36,7 @@ export const updateOrderStatus = async (orderId, status) => {
 
 export const getMyOrders = async () => {
   try {
-    const response = await axios.get(`${API}/api/orders/my-orders`, {
+    const response = await axios.get(`/api/orders/my-orders`, {
       
     });
 
