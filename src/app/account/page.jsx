@@ -4,39 +4,43 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { getCurrentUser } from "../../Services/Auth_Service";
 import { getMyOrders } from "../../Services/Order_Service";
+import { useUser } from "@clerk/nextjs";
 
 function page() {
   const router = useRouter();
 
-  const [user, setUser] = useState(null);
+  const { user, isSignedIn, isLoaded }= useUser();
+
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]= useState(false);
 
   // =========================
   // FETCH ACCOUNT DATA
   // =========================
   const fetchAccountData = async () => {
     try {
-      setLoading(true);
+        setLoading(true)
+//wait for clerk
+        if(!isLoaded){
+          return;
+        }
 
-      // Get logged-in user
-      const userResponse = await getCurrentUser();
 
-      if (!userResponse?.success || !userResponse?.user) {
-        router.push("/");
-        return;
-      }
-
-      setUser(userResponse.user);
-
+//Check Authentication
+        if(!isSignedIn || !user){
+          router.push("../Components/auth/SignupModal");
+        }
       // Get only logged-in user's orders
       const orderResponse = await getMyOrders();
 
       if (orderResponse?.success) {
         setOrders(orderResponse.orders || []);
+      }else{
+        setOrders([])
       }
+
+
     } catch (error) {
       console.error("Account page error:", error);
 
@@ -50,8 +54,9 @@ function page() {
   };
 
   useEffect(() => {
+    if(!isLoaded) return;
     fetchAccountData();
-  }, []);
+  }, [isLoaded, isSignedIn]);
 
   // =========================
   // LOADING
@@ -157,7 +162,7 @@ function page() {
               </h1>
 
               <p className="text-sm sm:text-base text-gray-500 mt-2">
-                Welcome back, {user?.name || "User"}.
+                Welcome back, {user.userName || "User"}.
                 Manage your account and track your orders.
               </p>
             </div>

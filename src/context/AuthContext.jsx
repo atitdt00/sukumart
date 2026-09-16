@@ -1,39 +1,47 @@
 "use client";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { useUser } from "@clerk/nextjs";
+import { createContext, useContext, useEffect, useState } from "react";
 import { getCurrentUser } from "../Services/Auth_Service";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+
+  const [adminUser, setAdminUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const { user, isLoaded, isSignedIn } = useUser();
 
   const checkAuth = async () => {
     try {
-        setAuthLoading(true)
+      setAuthLoading(true);
       const response = await getCurrentUser();
       if (response.success) {
-        setUser(response.user);
+        setAdminUser(response.user);
       } else {
-        setUser(null);
+        setAdminUser(null);
       }
     } catch (error) {
       console.error(error);
-      setUser(null);
+      setAdminUser(null);
     } finally {
       setAuthLoading(false);
     }
   };
   useEffect(() => {
     checkAuth();
-  },[]);
+  }, []);
   return (
-    <AuthContext.Provider value={{ user, setUser, authLoading, checkAuth }}>
+    <AuthContext.Provider
+      value={{
+        adminUser,
+        setAdminUser,
+        authLoading,
+        checkAuth,
+        user,
+        isSignedIn,
+        authLoading: !isLoaded,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

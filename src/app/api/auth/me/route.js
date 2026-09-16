@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "../../../../lib/dbConnect";
-import jwt from "jsonwebtoken";
 import User from "../../../../models/User";
+import { verifyToken } from "../../../../lib/auth";
 
 export async function GET(request) {
   try {
@@ -19,7 +19,7 @@ export async function GET(request) {
         },
       );
     }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded =verifyToken(token);
 
     const user = await User.findById(decoded.userId).select("-password");
 

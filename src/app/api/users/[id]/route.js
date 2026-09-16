@@ -77,7 +77,7 @@ export async function PUT(request, { params }) {
         new: true,
         runValidators: true,
       }
-    ).select("-password");
+    );
 
     if (!user) {
       return NextResponse.json(

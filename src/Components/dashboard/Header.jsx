@@ -1,40 +1,79 @@
 "use client";
 
 import { toast } from "react-toastify";
-import { logoutUser } from "../../Services/Auth_Service";
+import { getCurrentUser, logoutUser } from "../../Services/Auth_Service";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Header() {
-  const router= useRouter()
+  const router = useRouter();
 
-  const handleLogout=async()=>{
-    try{
-      const response=await logoutUser();
-      if(response.success){
-        toast.success(response.message|| "Logout successfully")
-        //redirect to login page
-        router.push("/")
+  const [admin, setAdmin] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-        //refresh server client state;
-        router.refresh();
+  // =========================
+  // GET CURRENT ADMIN
+  // =========================
+
+  const checkAdmin = async () => {
+    try {
+      setLoading(true);
+
+      const response = await getCurrentUser();
+
+      if (response?.success && response?.user?.role === "admin") {
+        setAdmin(response.user);
+      } else {
+        setAdmin(null);
       }
-
-    }catch(error){
-      console.error("Logout Error",error)
-      toast.error(
-        error.response?.data?.message || "Logout Failed"
-      )
+    } catch (error) {
+      console.error("Admin auth error:", error);
+      setAdmin(null);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await logoutUser();
+
+      if (response?.success) {
+        toast.success("Logout successfully");
+
+        setAdmin(null);
+
+        router.push("/");
+        router.refresh();
+
+        return;
+      }
+    } catch (error) {
+      console.error("Logout Error", error);
+      toast.error("Logout Failed");
+    }
+  };
+
+  useEffect(() => {
+    checkAdmin();
+  }, []);
+
+  const adminName = admin?.name || "Admin";
+
   return (
     <header className="h-16 bg-white border-b flex items-center justify-between px-6">
       <h2 className="text-lg font-semibold text-gray-800">Admin Dashboard</h2>
 
       <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-600">Admin</span>
+        <span className="text-sm text-gray-600">
+          {" "}
+          {loading ? adminName : "Admin"}
+        </span>
 
         <div className="w-9 h-9 rounded-full bg-[#0055B3] text-white flex items-center justify-center">
-          A
+          <span className="font-medium">
+            {adminName.charAt(0).toUpperCase()}
+          </span>
         </div>
         <button
           onClick={handleLogout}

@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { loginUser } from "../../Services/Auth_Service";
 import { useState } from "react";
 import { useModal } from "../../context/ModalContext";
 import { useRouter } from "next/navigation";
+import { useSignIn } from "@clerk/nextjs";
 
 function LoginModal() {
   //context openlogin
@@ -17,8 +17,8 @@ function LoginModal() {
   const {
     register,
     handleSubmit,
+    formState: { errors: formErrors },
     reset,
-    formState: { errors },
   } = useForm({
     defaultValues: {
       email: "",
@@ -27,35 +27,63 @@ function LoginModal() {
     },
   });
 
+  //clerk authencation
+  const { signIn } = useSignIn();
+
+  const signInWithSocial = async (strategy) => {
+    try {
+      closeLogin();
+
+      const { error } = await signIn.sso({
+        strategy,
+        redirectCallbackUrl: "/auth/sso-callback",
+        redirectUrl: "/",
+      });
+
+      if (error) {
+        console.error(error);
+        toast.error(error.message || "Social login failed");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Social login failed");
+    }
+  };
+
+  //data form submittion
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-      const response = await loginUser({
-        email: data.email,
+
+      const { error } = await signIn.password({
+        emailAddress: data.email,
         password: data.password,
       });
-      if (!response?.success) {
-        toast.error(response?.message || "Login failed");
+
+      if (error) {
+        console.error(error);
+        toast.error(error.message || "Login failed");
         return;
       }
 
-      reset({
-        email: "",
-        password: "",
-      });
+      if (signIn.status === "complete") {
+        await signIn.finalize({
+          navigate: ({ decorateUrl }) => {
+            router.push(decorateUrl("/"));
+          },
+        });
 
-      closeLogin();
-      if (response.user?.role === "admin") {
-        router.push("/dashboard");
-        router.refresh();
-      } else {
-        router.push("/");
-        router.refresh();
+        reset();
+        closeLogin();
+        toast.success("Login successful");
+      } else if (signIn.status === "needs_second_factor") {
+        toast.info("Additional verification is required.");
+     } else if (signIn.status === "needs_client_trust") {
+        toast.info("Please verify this device.");
       }
-      toast.success(response.message || "Login successfully");
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Login failed !");
+      toast.error("Login failed");
     } finally {
       setLoading(false);
     }
@@ -75,8 +103,8 @@ function LoginModal() {
         >
           {/* <!-- Header --> */}
           <div className="bg-linear-to-r from-[#002D62] to-[#0055B3] p-6 text-white relative">
-            <h2 className="text-2xl font-bold">Welcome Back 👋</h2>
-            <p className="text-white/70 text-sm mt-1">Login to your account</p>
+            <h2 className="text-2xl font-bold text-center">Welcome Back </h2>
+            <p className="text-white/70 text-center text-sm mt-1">Client Login</p>
 
             {/* <!-- close --> */}
             <button
@@ -104,14 +132,14 @@ function LoginModal() {
                   {...register("email", {
                     required: "Email is required",
                     pattern: {
-                      value: /^\S+@\S+\.\S+$/,
+                     value: /^\S+@\S+\.\S+$/,
                       message: "Please enter a valid email",
                     },
                   })}
                 />
-                {errors.email && (
+                {formErrors.email && (
                   <p className="text-red-500 text-sm mt-1">
-                    {errors.email.message}
+                    {formErrors.email.message}
                   </p>
                 )}
               </div>
@@ -129,10 +157,10 @@ function LoginModal() {
                     required: "password is required",
                   })}
                 />
-                {errors.password && (
+                {formErrors.password && (
                   <p className="text-red-500 text-xs mt-1">
                     {" "}
-                    {errors.password.message}{" "}
+                    {formErrors.password.message}{" "}
                   </p>
                 )}
               </div>
@@ -176,11 +204,19 @@ function LoginModal() {
 
             {/* <!-- Social --> */}
             <div className="grid grid-cols-2 gap-3">
-              <button className="flex items-center justify-center gap-2 border rounded-xl py-2 hover:bg-gray-50">
+              <button
+                type="button"
+                onClick={() => signInWithSocial("oauth_google")}
+                className="flex items-center justify-center gap-2 border rounded-xl py-2 hover:bg-gray-50"
+              >
                 <i className="fa-brands fa-google text-red-500"></i> Google
               </button>
 
-              <button className="flex items-center justify-center gap-2 border rounded-xl py-2 hover:bg-gray-50">
+              <button
+                type="button"
+                onClick={() => signInWithSocial("oauth_facebook")}
+                className="flex items-center justify-center gap-2 border rounded-xl py-2 hover:bg-gray-50"
+              >
                 <i className="fa-brands fa-facebook text-blue-600"></i> Facebook
               </button>
             </div>

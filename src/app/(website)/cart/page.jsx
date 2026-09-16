@@ -4,15 +4,17 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { useCart } from "../../../context/CartContext";
 import Link from "next/link";
-import { getCurrentUser } from "../../../Services/Auth_Service";
 import { toast } from "react-toastify";
 import { useModal } from "../../../context/ModalContext";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 function page() {
   const [checkingAuth, setCheckingAuth] = useState(false);
   const { openLogin } = useModal();
   const router = useRouter();
+
+  const { isLoaded, isSignedIn, }= useUser();
 
   const { cart, removeFromCart, decreaseQuantity, increaseQuantity } =
     useCart();
@@ -40,9 +42,11 @@ function page() {
     try {
       setCheckingAuth(true);
 
-      const user = await getCurrentUser();
+      if(!isLoaded){
+        return;
+      }
 
-      if (!user?.success) {
+      if (!isSignedIn) {
         toast.error("please login before proceeding to checkout");
         openLogin();
         return;

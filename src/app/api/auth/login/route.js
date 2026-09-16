@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import dbConnect from "../../../../lib/dbConnect";
-import User from "../../../../models/User";
 import { createToken } from "../../../../lib/auth";
+import User from "../../../../models/User";
 
 export async function POST(request) {
   try {
@@ -23,10 +23,12 @@ export async function POST(request) {
       );
     }
 
-    // Find user
+    // Find admin
     const user = await User.findOne({
       email: email.toLowerCase().trim(),
-    });
+      role: "admin",
+      isActive: true,
+    }).select("+password");
 
     if (!user) {
       return NextResponse.json(
@@ -78,7 +80,7 @@ export async function POST(request) {
       {
         success: true,
         message: "Login successful",
-        user: userData,
+        users: userData,
       },
       { status: 200 },
     );

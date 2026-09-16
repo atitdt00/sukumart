@@ -4,6 +4,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { getUsers } from "../../../../Services/User_Service";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -35,12 +36,10 @@ export default function UsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(
-        `${API}/api/users`
-      );
+      const response = await getUsers();
 
-      if (response.data.success) {
-        setUsers(response.data.users);
+      if (response.success) {
+        setUsers(response.users);
       }
     } catch (error) {
       console.error("Users error:", error);

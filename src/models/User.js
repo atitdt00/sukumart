@@ -2,6 +2,15 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
+    // Clerk user ID
+    // Required for Clerk customers, but not necessarily for custom admins
+    clerkId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
+
     name: {
       type: String,
       required: true,
@@ -16,10 +25,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // Only used for custom admin authentication
     password: {
       type: String,
-      required: true,
-      minlength: 6,
+      select: false,
     },
 
     role: {
@@ -31,14 +40,6 @@ const userSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
-    },
-    resetToken: {
-      type: String,
-      default: null,
-    },
-    resetTokenExpire: {
-      type: Date,
-      default: null,
     },
   },
   {

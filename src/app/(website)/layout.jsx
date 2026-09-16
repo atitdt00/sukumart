@@ -8,6 +8,7 @@ import SignupModal from "../../Components/auth/SignupModal";
 import { ModalProvider } from "../../context/ModalContext";
 import { CartProvider } from "../../context/CartContext";
 import { AuthProvider } from "../../context/AuthContext";
+import AdminLogin from "../../Components/auth/AdminLogin";
 
 function layout({ children }) {
   return (
@@ -20,6 +21,7 @@ function layout({ children }) {
             <LoginModal />
             <SignupModal />
             <Mobile_Menu />
+            <AdminLogin/>
             <Navbar />
             {children}
             <Footer />

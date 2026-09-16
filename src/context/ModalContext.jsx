@@ -8,19 +8,32 @@ const ModalContext= createContext();
 export function ModalProvider({children}){
     const [showLogin, setShowLogin]= useState(false);
     const [showSignup, setShowSignup]=useState(false);
+    const [showAdmin, setShowAdmin]= useState(false);
 
 
     //open signup modal
     const openLogin=()=>{
-        setShowSignup(false)
         setShowLogin(true);
+        setShowSignup(false);
+        setShowAdmin(false);
     };
 
     //open Singup Modal
     const openSignup=()=>{
-        setShowLogin(false);
         setShowSignup(true);
+        setShowLogin(false);
+        setShowAdmin(false)
     };
+
+    //open Admin modal
+    const openAdmin=()=>{
+        setShowAdmin(true);
+        setShowLogin(false);
+        setShowSignup(false)
+
+    }
+
+
     //close login
     const closeLogin=()=>{
         setShowLogin(false)
@@ -31,8 +44,15 @@ export function ModalProvider({children}){
         setShowSignup(false);
     };
 
+    //close Admin modal
+    const closeAdmin=()=>{
+        setShowAdmin(false);
+    }
+
+
+
     return(
-        <ModalContext.Provider value={{showLogin, showSignup, setShowLogin, setShowSignup, openLogin, openSignup,  closeLogin, closeSignup}}>
+        <ModalContext.Provider value={{ showAdmin, openAdmin, closeAdmin, showLogin, showSignup, setShowLogin, setShowSignup, openLogin, openSignup,  closeLogin, closeSignup}}>
             {children}
         </ModalContext.Provider>
     )

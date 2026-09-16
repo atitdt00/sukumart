@@ -1,30 +1,58 @@
 "use client";
+import { useSignIn } from "@clerk/nextjs";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { forgotPassword } from "../../../../Services/Auth_Service";
 
 import { toast } from "react-toastify";
 
 function page() {
+
+  const { signIn }= useSignIn()
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm();    
+  } = useForm({
+
+    defaultValues: {
+      email: "",
+      code: "",
+      password: "",
+      confirmPassword: "",
+    }
+  });    
 
   const onSubmit = async (data) => {
     try {
-      const response = await forgotPassword(data.email);
-      if (response.success) {
-        toast.success(response.message);
-      } else {
-        toast.error(response.message);
-      }
+     
+      await signIn.create({
+        identifier: data.email,
+      })
+
+      await signIn.resetPasswordEmailCode();
+
+      
+        toast.success("password reset code send to your email.");
+        setStep(2);
+      
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Something went wrong");
+      toast.error(error?.errors?.[0]?.longMessage || error?.errors?.[0]?.message || "Something went wrong");
     }
   };
+
+  //step 2: verify code and reset password 
+
+  const resetPassword =async(data)=>{
+
+    try{
+
+    }catch(error){
+      console.log("reset password UI error", error);
+      
+    }
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">

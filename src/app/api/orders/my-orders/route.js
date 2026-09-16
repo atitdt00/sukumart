@@ -1,8 +1,9 @@
-import { cookies } from "next/headers";
 import dbConnect from "../../../../lib/dbConnect";
 import { NextResponse } from "next/server";
-import { verifyToken } from "../../../../lib/auth";
 import Order from "../../../../models/Order";
+import { auth } from "@clerk/nextjs/server";
+import User from "../../../../models/User";
+
 
 
 export async function GET(){
@@ -11,11 +12,10 @@ export async function GET(){
         await dbConnect();
 
         //Get token from browser cookie
-        const cookieStore= await cookies();
-        const token= cookieStore.get("token")?.value;
+       const { userId } = await auth();
 
         //no token
-        if(!token){
+        if(!userId){
             return NextResponse.json(
                 {
                     success: false,
@@ -27,14 +27,17 @@ export async function GET(){
             )
         }
 
-        //verify token
-        const decoded = verifyToken(token);
+       //find mongodb user using clerk userid
 
-        if(!decoded){
+       const user= await User.findOne({
+        clerkId: userId
+       })
+
+        if(!user){
             return NextResponse.json(
                 {
                     success: false,
-                    message: "Invalid token",
+                    message: "user not found",
                 },
                 {
                     status: 401
