@@ -7,12 +7,12 @@ import { useForm } from "react-hook-form";
 import { createOrder } from "../../../Services/Order_Service";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { getCurrentUser } from "../../../Services/Auth_Service";
 import { useModal } from "../../../context/ModalContext";
 import {
   initiateEsewaPayment,
   initiateKhaltiPayment,
 } from "../../../Services/Payment_Service";
+import { useUser } from "@clerk/nextjs";
 
 function page() {
   const { cart, clearCart } = useCart();
@@ -20,6 +20,9 @@ function page() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+
+
+  const { user, isSignedIn, isLoaded } = useUser();
 
   const {
     register,
@@ -120,9 +123,20 @@ function page() {
       setLoading(true);
 
       //ckeck logged-in user
-      const user = await getCurrentUser();
-      if (!user?.success) {
-        toast.error("Please login at first before placing an order");
+      // const user = await getCurrentUser();
+      // if (!user?.success) {
+      //   toast.error("Please login at first before placing an order");
+      //   openLogin();
+      //   return;
+      // }
+
+      if(!isLoaded){
+        toast.info("checking your login...");
+        return;
+      }
+
+      if(!isSignedIn){
+        toast.error("please login before place to order..")
         openLogin();
         return;
       }

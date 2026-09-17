@@ -9,13 +9,13 @@ export default function Top_Header() {
         <div className="max-w-7xl mx-auto px-6 h-[38px] flex items-center justify-between text-[12.5px] font-medium relative">
           <div className="flex items-center gap-5">
             <Link
-              href="contact.html"
+              href="/contact"
               className="flex items-center gap-1.5 text-white/70 hover:text-[#F4C542] transition-colors no-underline"
             >
               <i className="fa-solid fa-phone text-[11px]"></i> 9800000000
             </Link>
             <Link
-              href="contact.html"
+              href="/contact"
               className="hidden sm:flex items-center gap-1.5 text-white/70 hover:text-[#F4C542] transition-colors no-underline"
             >
               <i className="fa-regular fa-envelope text-[11px]"></i>{" "}

@@ -20,7 +20,7 @@ function Navbar() {
         <li><Link href="/contact" className="nav-link">Contact</Link></li>
       </ul>
       <div className="flex items-center gap-2 text-[13px] font-bold text-[#F4C542] bg-amber-400/10 border border-amber-400/30 rounded-lg px-3.5 py-1.5">
-        <i className="fa-solid fa-bolt text-sm"></i> Flash Sale — Up to 60% Off
+      <i className="fa-solid fa-bolt text-sm"></i> Flash Sale — Up to 60% Off
       </div>
     </div>
   </nav>

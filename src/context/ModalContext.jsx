@@ -10,6 +10,9 @@ export function ModalProvider({children}){
     const [showSignup, setShowSignup]=useState(false);
     const [showAdmin, setShowAdmin]= useState(false);
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+
 
     //open signup modal
     const openLogin=()=>{
@@ -52,7 +55,7 @@ export function ModalProvider({children}){
 
 
     return(
-        <ModalContext.Provider value={{ showAdmin, openAdmin, closeAdmin, showLogin, showSignup, setShowLogin, setShowSignup, openLogin, openSignup,  closeLogin, closeSignup}}>
+        <ModalContext.Provider value={{ setIsMenuOpen, isMenuOpen,  showAdmin, openAdmin, closeAdmin, showLogin, showSignup, setShowLogin, setShowSignup, openLogin, openSignup,  closeLogin, closeSignup}}>
             {children}
         </ModalContext.Provider>
     )

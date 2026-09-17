@@ -1,13 +1,19 @@
+"use client"
+
 import Link from "next/link";
 import React from "react";
+import { useModal} from "../../context/ModalContext"
 
 function Mobile_Menu() {
+  const { isMenuOpen }=useModal();
+
+  if(!isMenuOpen) return null;
   return (
     <>
       {/* <!-- ── MOBILE MENU ── --> */}
       <div
         id="mobileMenu"
-        className="hidden lg:hidden bg-white border-b border-gray-100 shadow-lg z-40 relative"
+        className="lg:hidden bg-white border-b border-gray-100 shadow-lg z-40 relative"
       >
         <div className="flex items-center gap-2 mx-4 my-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[13px] font-bold text-amber-700">
           <i className="fa-solid fa-bolt text-amber-500"></i> Flash Sale — Up to 60%
@@ -15,10 +21,10 @@ function Mobile_Menu() {
         </div>
         <nav className="flex flex-col">
           <Link
-            href="/"
+            href={"/"}
             className="flex items-center justify-between px-5 py-3.5 text-sm font-semibold text-gray-800 border-b border-gray-100 hover:bg-gray-50 hover:text-[#002D62] no-underline transition-colors"
           >
-            Home{" "}
+            Home{""}
             <i className="fa-solid fa-chevron-right text-[11px] text-gray-300"></i>
           </Link>
           <Link

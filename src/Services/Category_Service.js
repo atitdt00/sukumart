@@ -1,17 +1,17 @@
 import axios from "axios";
 
-
+const API=process.env.NEXT_PUBLIC_API_URL || ""
 
 // Get all categories
 export const getCategories = async () => {
-  const response = await axios.get(`/api/categories` , { withCredentail: true });
+  const response = await axios.get(`${API}/api/categories` , { withCredentail: true });
 
   return response.data;
 };
 
 // Get category by slug
 export const getCategoryBySlug = async (slug) => {
-  const response = await axios.get(`$/api/categories/${slug}`, { withCredential: true });
+  const response = await axios.get(`/api/categories/${slug}`, { withCredential: true });
 
   return response.data;
 };

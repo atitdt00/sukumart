@@ -27,13 +27,12 @@ function Header() {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Admin authentication
   const [admin, setAdmin] = useState(null);
   const [adminLoading, setAdminLoading] = useState(true);
 
-  const { openLogin, openAdmin } = useModal();
+  const { openLogin, openAdmin, setIsMenuOpen, isMenuOpen } = useModal();
 
   const categoryRef = useRef(null);
 
