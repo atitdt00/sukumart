@@ -24,7 +24,9 @@ export const createContact = async (contactData) => {
 export const getContact = async () => {
   try {
     const response = await axios.get(
-      `/api/contact`,
+      `/api/contact`, {
+        withCredential: true
+      }
     );
 
     return response.data;

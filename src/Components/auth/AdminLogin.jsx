@@ -69,6 +69,16 @@ function AdminLogin() {
           <p className="text-white/70 text-center text-sm mt-1">
             Login to your dashboard
           </p>
+
+          {/* <!-- close --> */}
+            <button
+              id="closeLogin"
+              type="button"
+              onClick={closeAdmin}
+              className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition"
+            >
+              <i className="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
         {/* Body */}

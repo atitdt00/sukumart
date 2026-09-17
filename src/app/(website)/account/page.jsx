@@ -4,11 +4,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { getMyOrders } from "../../Services/Order_Service";
+import { getMyOrders } from "../../../Services/Order_Service";
 import { useUser } from "@clerk/nextjs";
+import { useModal } from "../../../context/ModalContext"
 
 function page() {
   const router = useRouter();
+
+  const {openLogin }= useModal()
 
   const { user, isSignedIn, isLoaded }= useUser();
 
@@ -29,7 +32,9 @@ function page() {
 
 //Check Authentication
         if(!isSignedIn || !user){
-          router.push("../Components/auth/SignupModal");
+           openLogin();
+
+          return
         }
       // Get only logged-in user's orders
       const orderResponse = await getMyOrders();
@@ -56,7 +61,7 @@ function page() {
   useEffect(() => {
     if(!isLoaded) return;
     fetchAccountData();
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, user]);
 
   // =========================
   // LOADING
@@ -162,7 +167,7 @@ function page() {
               </h1>
 
               <p className="text-sm sm:text-base text-gray-500 mt-2">
-                Welcome back, {user.userName || "User"}.
+                Welcome back, {user?.fullName ||  user?.firstName || "User"}.
                 Manage your account and track your orders.
               </p>
             </div>
@@ -204,7 +209,7 @@ function page() {
               </p>
 
               <h2 className="text-xl sm:text-2xl font-bold truncate">
-                {user?.name || "User"}
+                {user?.fullName || "User"}
               </h2>
 
               <p className="text-sm sm:text-base text-blue-100 mt-1 break-all">
