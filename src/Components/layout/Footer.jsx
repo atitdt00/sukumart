@@ -65,7 +65,7 @@ function Footer() {
               <ul className="space-y-3 text-sm text-gray-300">
                 <li>
                   <Link
-                    href="index.html"
+                    href="/"
                     className="hover:text-white hover:pl-1 transition"
                   >
                     Home
@@ -73,7 +73,7 @@ function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="shop.html"
+                    href="/shop"
                     className="hover:text-white hover:pl-1 transition"
                   >
                     Shop
@@ -81,7 +81,7 @@ function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="about.html"
+                    href="/about"
                     className="hover:text-white hover:pl-1 transition"
                   >
                     About Us
@@ -89,7 +89,7 @@ function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="contact.html"
+                    href="/contact"
                     className="hover:text-white hover:pl-1 transition"
                   >
                     Contact
@@ -111,7 +111,7 @@ function Footer() {
               <ul className="space-y-3 text-sm text-gray-300">
                 <li>
                   <Link
-                    href="categories.html"
+                    href="/categories"
                     className="hover:text-white hover:pl-1 transition"
                   >
                     Electronics
@@ -119,7 +119,7 @@ function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="categories.html"
+                    href="/categories"
                     className="hover:text-white hover:pl-1 transition"
                   >
                     Fashion
@@ -127,7 +127,7 @@ function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="categories.html"
+                    href="/categories"
                     className="hover:text-white hover:pl-1 transition"
                   >
                     Home & Living
@@ -135,7 +135,7 @@ function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="categories.html"
+                    href="/categories"
                     className="hover:text-white hover:pl-1 transition"
                   >
                     Sports
@@ -143,7 +143,7 @@ function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="categories.html"
+                    href="/categories"
                     className="hover:text-white hover:pl-1 transition"
                   >
                     Books
@@ -197,7 +197,7 @@ function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="hover:text-white hover:pl-1 transition">
+                  <Link href="/track_order" className="hover:text-white hover:pl-1 transition">
                     Order Tracking
                   </Link>
                 </li>
