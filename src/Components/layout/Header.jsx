@@ -297,7 +297,7 @@ function Header() {
             {/* Wishlist */}
 
             <Link
-              href="/wishlist"
+              href="#"
               className="flex items-center justify-center w-11 h-11 rounded-xl border-[1.5px] border-gray-200 text-gray-700 text-xl hover:border-[#0055B3] hover:text-[#002D62] transition-all no-underline"
             >
               <i className="fa-regular fa-heart"></i>
