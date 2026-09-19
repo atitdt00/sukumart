@@ -196,7 +196,7 @@ function Header() {
             className="shrink-0 no-underline"
           >
             <Image
-              src="/image/products/sukumart.jpg"
+              src="/image/products/sukumartlogo.jpg"
               alt="Sukumart"
               width={160}
               height={40}
