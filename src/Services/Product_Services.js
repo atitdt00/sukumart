@@ -4,7 +4,7 @@
 
   export const getProducts = async () => {
     try {
-      const response = await axios.get(`${API}/api/products`);
+      const response = await axios.get(`/api/products`);
 
       return response.data;
     } catch (error) {
@@ -16,7 +16,7 @@
   export const getProductsByCategory = async (categoryId) => {
     try {
       const response = await axios.get(
-        `${API}/api/products/category/${categoryId}`
+        `/api/products/category/${categoryId}`
       );
 
       return response.data;
@@ -30,7 +30,7 @@
    export const getProductBySlug = async(slug) => {
     try {
       const response = await axios.get(
-        `${API}/api/products/${slug}`
+        `/api/products/${slug}`
       );
 
       return response.data;
@@ -44,7 +44,7 @@
   export const searchProducts = async (query) => {
     try {
       const response = await axios.get(
-        `${API}/api/products?search=${encodeURIComponent(query)}`
+        `/api/products?search=${encodeURIComponent(query)}`
       );
 
       return response.data;
@@ -56,19 +56,19 @@
 
 
   export const  deleteProduct= async(id)=>{
-    const response= await axios.delete(`${API}/api/products/${id}`);
+    const response= await axios.delete(`/api/products/${id}`);
 
     return response.data;
   }
 
   export const updateProduct= async(id, formData)=>{
-    const response= await axios.put(`${API}/api/products/${id}`, formData);
+    const response= await axios.put(`/api/products/${id}`, formData);
 
     return response.data;
   }
 
   export const createProduct=async(formData)=>{
-    const response= await axios.post(`${API}/api/products`, formData);
+    const response= await axios.post(`/api/products`, formData);
 
     return response.data;
 
