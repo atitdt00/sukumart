@@ -13,6 +13,7 @@ export async function GET(){
 
         //Get token from browser cookie
        const { userId } = await auth();
+        console.log("CLERK USER ID:", userId);
 
         //no token
         if(!userId){
