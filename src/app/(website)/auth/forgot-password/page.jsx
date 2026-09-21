@@ -6,53 +6,71 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 function page() {
-
-  const { signIn }= useSignIn()
+  const { signIn, isLoaded } = useSignIn();
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
-
     defaultValues: {
       email: "",
       code: "",
       password: "",
       confirmPassword: "",
-    }
-  });    
+    },
+  });
 
   const onSubmit = async (data) => {
+    if(!isLoaded) return ;
     try {
-     
       await signIn.create({
         identifier: data.email,
+      });
+
+      await signIn.prepareFirstFactor({
+        strategy: "reset_password_email_code",
       })
 
       await signIn.resetPasswordEmailCode();
 
-      
-        toast.success("password reset code send to your email.");
-        setStep(2);
-      
+      toast.success("password reset code send to your email.");
+      setStep(2);
     } catch (error) {
       console.error(error);
-      toast.error(error?.errors?.[0]?.longMessage || error?.errors?.[0]?.message || "Something went wrong");
+      toast.error(
+        error?.errors?.[0]?.longMessage ||
+          error?.errors?.[0]?.message ||
+          "Something went wrong",
+      );
     }
   };
 
-  //step 2: verify code and reset password 
+  //step 2: verify code and reset password
 
-  const resetPassword =async(data)=>{
-
-    try{
-
-    }catch(error){
-      console.log("reset password UI error", error);
-      
+  const resetPassword = async (data) => {
+    if (!isLoaded) return;
+    if (data.password !== data.confirmPassword) {
+      toast.error("Passwords do not match.");
+      return;
     }
-  }
+    try {
+      await signIn.attemptFirstFactor({
+        strategy: "reset_password_email_code",
+        code: data.code,
+      });
+      await signIn.resetPassword({ password: data.password });
+      toast.success("Password reset successfully.");
+      window.location.href = "/sign-in";
+    } catch (error) {
+      console.error("Reset password error:", error);
+      toast.error(
+        error?.errors?.[0]?.longMessage ||
+          error?.errors?.[0]?.message ||
+          "Something went wrong",
+      );
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">

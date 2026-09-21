@@ -49,7 +49,7 @@ export async function GET(){
 
         const orders = await Order.find(
             {
-                "customer.email": decoded.email
+                "customer.email": user.email
             }
         ).sort({createdAt: -1})
         .populate("products.productId");

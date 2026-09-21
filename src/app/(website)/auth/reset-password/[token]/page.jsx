@@ -90,6 +90,7 @@ function page() {
 
           <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full bg-[#0055B3] text-white py-3 rounded-lg font-semibold disabled:opacity-50"
           >
             {isSubmitting ? "Updating..." : " Reset Password"}

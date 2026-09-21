@@ -24,10 +24,6 @@ function page() {
   const fetchAccountData = async () => {
     try {
         setLoading(true)
-//wait for clerk
-        if(!isLoaded){
-          return;
-        }
 
 
 //Check Authentication
@@ -44,7 +40,6 @@ function page() {
       }else{
         setOrders([])
       }
-
 
     } catch (error) {
       console.error("Account page error:", error);

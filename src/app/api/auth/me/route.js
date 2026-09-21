@@ -1,14 +1,47 @@
 import { NextResponse } from "next/server";
 import dbConnect from "../../../../lib/dbConnect";
 import User from "../../../../models/User";
-import { auth } from "@clerk/nextjs/server";
+import { verifyToken } from "../../../../lib/auth";
 
 export async function GET(request) {
   try {
     await dbConnect();
 
-    const { userId }= await auth();
-    if (!userId) {
+    
+     // ==========================================
+    // 1. CHECK CLERK CUSTOMER
+    // ==========================================
+
+    const { userId } = await auth();
+
+    if (userId) {
+      const user = await User.findOne({
+        clerkId: userId,
+      }).select("-password");
+
+      if (!user) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Customer not found",
+          },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        user,
+        authType: "clerk",
+      });
+    }
+
+   // ==========================================
+    // 1. CHECK Admin
+    // ==========================================
+
+    const token = request.cookies.get("token")?.value;
+    if (!token) {
       return NextResponse.json(
         {
           success: false,
@@ -19,16 +52,15 @@ export async function GET(request) {
         },
       );
     }
-   const user= await User.findOne({
-    clerkId: userId,
-   }).select("-password");
+    const decoded =verifyToken(token);
 
+    const user = await User.findById(decoded.userId).select("-password");
 
     if (!user) {
       return NextResponse.json(
         {
           success: false,
-          message: "User  not found",
+          message: "User is not found",
         },
         {
           status: 404,
@@ -46,14 +78,14 @@ export async function GET(request) {
       },
     );
   } catch (error) {
-    console.error("GET /api/auth/me errors:", error);
+    console.error("userMe  errors:", error);
     return NextResponse.json(
       {
         success: false,
-        message: "Server error",
+        message: "Invalid or expired token",
       },
       {
-        status: 500,
+        status: 401,
       },
     );
   }
