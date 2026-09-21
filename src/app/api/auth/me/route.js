@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import dbConnect from "../../../../lib/dbConnect";
 import User from "../../../../models/User";
-import { verifyToken } from "../../../../lib/auth";
+import { auth } from "@clerk/nextjs/server";
 
 export async function GET(request) {
   try {
     await dbConnect();
 
-    const token = request.cookies.get("token")?.value;
-    if (!token) {
+    const { userId }= await auth();
+    if (!userId) {
       return NextResponse.json(
         {
           success: false,
@@ -19,15 +19,16 @@ export async function GET(request) {
         },
       );
     }
-    const decoded =verifyToken(token);
+   const user= await User.findOne({
+    clerkId: userId,
+   }).select("-password");
 
-    const user = await User.findById(decoded.userId).select("-password");
 
     if (!user) {
       return NextResponse.json(
         {
           success: false,
-          message: "User is not found",
+          message: "User  not found",
         },
         {
           status: 404,
@@ -45,14 +46,14 @@ export async function GET(request) {
       },
     );
   } catch (error) {
-    console.error("userMe  errors:", error);
+    console.error("GET /api/auth/me errors:", error);
     return NextResponse.json(
       {
         success: false,
-        message: "Invalid or expired token",
+        message: "Server error",
       },
       {
-        status: 401,
+        status: 500,
       },
     );
   }
