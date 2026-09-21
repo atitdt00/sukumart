@@ -6,13 +6,13 @@ export const createOrder = async (OrderData) => {
 };
 
 export const getOrders = async () => {
-  const response = await axios.get(`/api/orders`, { withCrendential: true });
+  const response = await axios.get(`/api/orders`, { withCredentials: true});
   return response.data;
 };
 
 export const trackOrder = async (orderId) => {
   try {
-    const response = await axios.get(`/api/orders/${orderId}`, { withCredential: true});
+    const response = await axios.get(`/api/orders/${orderId}`, { withCredentials: true});
     return response.data;
   } catch (error) {
     console.error("Track order API error:", error);
@@ -35,13 +35,17 @@ export const updateOrderStatus = async (orderId, status) => {
 
 export const getMyOrders = async () => {
   try {
-    const response = await axios.get(`/api/orders/my-orders`, {
-      withCredential: true
+    const response = await axios.get("/api/orders/my-orders", {
+      withCredentials: true,
     });
 
     return response.data;
   } catch (error) {
-    console.error("My orders users API error:", error);
+    console.error(
+      "My orders API error:",
+      error.response?.data || error.message
+    );
+
     throw error;
   }
 };

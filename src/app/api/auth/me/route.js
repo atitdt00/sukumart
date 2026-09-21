@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "../../../../lib/dbConnect";
 import User from "../../../../models/User";
 import { verifyToken } from "../../../../lib/auth";
+import { auth } from "@clerk/nextjs/server";
 
 export async function GET(request) {
   try {

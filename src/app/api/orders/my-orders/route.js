@@ -34,14 +34,16 @@ export async function GET(){
         clerkId: userId
        })
 
+       console.log("MongoDB user:", user);
+
         if(!user){
             return NextResponse.json(
                 {
                     success: false,
-                    message: "user not found",
+                    message: "MongoDB user not found",
                 },
                 {
-                    status: 401
+                    status: 404
                 }
             )
         }

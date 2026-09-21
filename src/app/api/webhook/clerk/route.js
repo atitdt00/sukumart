@@ -1,114 +1,173 @@
+import { NextResponse } from "next/server";
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
+
 import dbConnect from "../../../../lib/dbConnect";
 import User from "../../../../models/User";
-import { NextResponse } from "next/server";
 
+export async function POST(request) {
+  try {
+    // =========================
+    // VERIFY CLERK WEBHOOK
+    // =========================
 
+    const event = await verifyWebhook(request);
 
+    // =========================
+    // CONNECT MONGODB
+    // =========================
 
-export async function POST(request){
-    try{
+    await dbConnect();
 
-        //verify that the request came from Clerk
-        const event= await verifyWebhook(request);
+    // =========================
+    // GET EVENT TYPE
+    // =========================
 
-        //connecgt to MongoDB
-        await dbConnect();
+    const eventType = event.type;
 
-        //Get event type
-        const eventType= event.type;
+    console.log("Clerk webhook received:", eventType);
 
-        console.log("Clerk webhook received :", eventType);
+    // =========================
+    // USER CREATED
+    // =========================
 
-        //user created
-        if(eventType === "user.created"){
-            const { id, first_name, last_name, email_addresses, } = event.data;
-            
-            const email = email_addresses?.[0]?.email_address?.toLowerCase() || "";
-            
-            const name= [first_name, last_name].filter(Boolean).join(" ") || "User";
+    if (eventType === "user.created") {
+      const {
+        id,
+        first_name,
+        last_name,
+        email_addresses,
+      } = event.data;
 
-        await User.findOneAndUpdate(
-            {
-                clerkId: id
-            },
-            {
-                clerkId : id,
-                name,
-                email,
-                
-            },
-            {
-                upsert:true,
-                new: true,
-                
-                setDefaultsOnInsert: true,
-            }
-        );
-        console.log("user created in MongoDB", id);
+      const email =
+        email_addresses?.[0]?.email_address
+          ?.toLowerCase() || "";
+
+      const name =
+        [first_name, last_name]
+          .filter(Boolean)
+          .join(" ") || "User";
+
+      await User.findOneAndUpdate(
+        {
+          clerkId: id,
+        },
+        {
+          clerkId: id,
+          name,
+          email,
+        },
+        {
+          upsert: true,
+          new: true,
+          setDefaultsOnInsert: true,
+        }
+      );
+
+      console.log(
+        "MongoDB user created:",
+        id
+      );
     }
 
-        //user updated
-        else if(eventType === "user.updated"){
+    // =========================
+    // USER UPDATED
+    // =========================
 
-            const { id, first_name, last_name, email_addresses }= event.data;
+    else if (eventType === "user.updated") {
+      const {
+        id,
+        first_name,
+        last_name,
+        email_addresses,
+      } = event.data;
 
-            const email = email_addresses?.[0]?.email_address?.toLowerCase() || "";
+      const email =
+        email_addresses?.[0]?.email_address
+          ?.toLowerCase() || "";
 
-            const name= [first_name, last_name].filter(Boolean).join(" ") || "User";
+      const name =
+        [first_name, last_name]
+          .filter(Boolean)
+          .join(" ") || "User";
 
-            await User.findOneAndUpdate(
-                {
-                    clerkId: id
-                },
-                {
-                    name, email
-                },
-                {
-                    new: true,
-                }
-            );
-            console.log("User updated in MongoDB:", id);
-
+      await User.findOneAndUpdate(
+        {
+          clerkId: id,
+        },
+        {
+          clerkId: id,
+          name,
+          email,
+        },
+        {
+          upsert: true,
+          new: true,
+          setDefaultsOnInsert: true,
         }
+      );
 
-        //user deleted
-        else if(eventType === "user.deleted"){
-            const { id } = event.data;
-
-            await User.findOneAndDelete({
-                clerkId: id,
-            })
-            console.log("user deleted from MongoDB:", id);
-        }
-
-        //other events
-
-        else{
-            console.log("Unhandled Clerk event :", eventType);
-        }
-
-        return NextResponse.json(
-            {
-                success: true,
-                message: "Webhook processed successfully",
-            },
-            {
-                status: 200
-            }
-        )
-
-    }catch(error){
-        console.log("Clerk Webhook error",error);
-
-        return NextResponse.json(
-            {
-                success: false,
-                message: "Webhook Verification or processing failed",
-            },
-            {
-                status: 400,
-            }
-        )
+      console.log(
+        "MongoDB user updated:",
+        id
+      );
     }
+
+    // =========================
+    // USER DELETED
+    // =========================
+
+    else if (eventType === "user.deleted") {
+      const { id } = event.data;
+
+      await User.findOneAndDelete({
+        clerkId: id,
+      });
+
+      console.log(
+        "MongoDB user deleted:",
+        id
+      );
+    }
+
+    // =========================
+    // OTHER EVENTS
+    // =========================
+
+    else {
+      console.log(
+        "Unhandled Clerk event:",
+        eventType
+      );
+    }
+
+    // =========================
+    // SUCCESS RESPONSE
+    // =========================
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Webhook processed successfully",
+      },
+      {
+        status: 200,
+      }
+    );
+  } catch (error) {
+    console.error(
+      "Clerk webhook error:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          "Webhook verification or processing failed",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
 }
