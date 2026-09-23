@@ -76,7 +76,7 @@ export async function GET() {
     // =========================
 
     const mongoUsers = await User.find()
-      .select("clerkId role fullName")
+      .select("clerkId role fullName email")
       .lean();
 
     // =========================
@@ -101,7 +101,7 @@ export async function GET() {
 
       clerkId: user.id,
 
-      name:
+      fullName:
         [user.firstName, user.lastName]
           .filter(Boolean)
           .join(" ") || "User",
@@ -163,7 +163,7 @@ export async function POST(request) {
     const body = await request.json();
 
     const {
-      name,
+      fullName,
       email,
       password,
     } = body;
@@ -172,12 +172,12 @@ export async function POST(request) {
     // REQUIRED FIELDS
     // =========================
 
-    if (!name || !email || !password) {
+    if (!fullName || !email || !password) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "Name, email and password are required",
+            "fullName, email and password are required",
         },
         { status: 400 }
       );

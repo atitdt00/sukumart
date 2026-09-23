@@ -1,34 +1,41 @@
 import { NextResponse } from "next/server";
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
+
 import dbConnect from "../../../../lib/dbConnect";
 import User from "../../../../models/User";
 
-
 export async function POST(request) {
   try {
-    // =========================
+    // =========================================
     // VERIFY CLERK WEBHOOK
-    // =========================
+    // =========================================
 
     const event = await verifyWebhook(request);
 
-    // =========================
+    // =========================================
     // CONNECT MONGODB
-    // =========================
+    // =========================================
 
     await dbConnect();
 
-    // =========================
-    // GET EVENT TYPE
-    // =========================
+    // =========================================
+    // EVENT TYPE
+    // =========================================
 
     const eventType = event.type;
 
-    console.log("Clerk webhook received:", eventType);
+    console.log(
+      "========================================"
+    );
 
-    // =========================
+    console.log(
+      "Clerk webhook received:",
+      eventType
+    );
+
+    // =========================================
     // USER CREATED
-    // =========================
+    // =========================================
 
     if (eventType === "user.created") {
       const {
@@ -38,16 +45,23 @@ export async function POST(request) {
         email_addresses,
       } = event.data;
 
+      console.log("Clerk User ID:", id);
+
       const email =
         email_addresses?.[0]?.email_address
-          ?.toLowerCase() || "";
+          ?.toLowerCase()
+          .trim() || "";
 
       const fullName =
         [first_name, last_name]
           .filter(Boolean)
           .join(" ") || "User";
 
-      await User.findOneAndUpdate(
+      console.log("Full name:", fullName);
+      console.log("Email:", email);
+
+      // Create or update MongoDB user
+      const user = await User.findOneAndUpdate(
         {
           clerkId: id,
         },
@@ -55,6 +69,8 @@ export async function POST(request) {
           clerkId: id,
           fullName,
           email,
+          role: "customer",
+          isActive: true,
         },
         {
           upsert: true,
@@ -64,14 +80,19 @@ export async function POST(request) {
       );
 
       console.log(
-        "MongoDB user created:",
-        id
+        "MongoDB user created/updated:",
+        user._id
+      );
+
+      console.log(
+        "MongoDB Clerk ID:",
+        user.clerkId
       );
     }
 
-    // =========================
+    // =========================================
     // USER UPDATED
-    // =========================
+    // =========================================
 
     else if (eventType === "user.updated") {
       const {
@@ -81,16 +102,19 @@ export async function POST(request) {
         email_addresses,
       } = event.data;
 
+      console.log("Clerk User ID:", id);
+
       const email =
         email_addresses?.[0]?.email_address
-          ?.toLowerCase() || "";
+          ?.toLowerCase()
+          .trim() || "";
 
       const fullName =
         [first_name, last_name]
           .filter(Boolean)
           .join(" ") || "User";
 
-      await User.findOneAndUpdate(
+      const user = await User.findOneAndUpdate(
         {
           clerkId: id,
         },
@@ -108,30 +132,41 @@ export async function POST(request) {
 
       console.log(
         "MongoDB user updated:",
-        id
+        user._id
+      );
+
+      console.log(
+        "MongoDB Clerk ID:",
+        user.clerkId
       );
     }
 
-    // =========================
+    // =========================================
     // USER DELETED
-    // =========================
+    // =========================================
 
     else if (eventType === "user.deleted") {
       const { id } = event.data;
 
-      await User.findOneAndDelete({
-        clerkId: id,
-      });
+      console.log(
+        "Deleting Clerk user:",
+        id
+      );
+
+      const deletedUser =
+        await User.findOneAndDelete({
+          clerkId: id,
+        });
 
       console.log(
-        "MongoDB user deleted:",
-        id
+        "MongoDB deleted user:",
+        deletedUser?._id || "User not found"
       );
     }
 
-    // =========================
+    // =========================================
     // OTHER EVENTS
-    // =========================
+    // =========================================
 
     else {
       console.log(
@@ -140,9 +175,13 @@ export async function POST(request) {
       );
     }
 
-    // =========================
-    // SUCCESS RESPONSE
-    // =========================
+    console.log(
+      "========================================"
+    );
+
+    // =========================================
+    // SUCCESS
+    // =========================================
 
     return NextResponse.json(
       {
@@ -155,14 +194,23 @@ export async function POST(request) {
     );
   } catch (error) {
     console.error(
+      "========================================"
+    );
+
+    console.error(
       "Clerk webhook error:",
       error
+    );
+
+    console.error(
+      "========================================"
     );
 
     return NextResponse.json(
       {
         success: false,
         message:
+          error.message ||
           "Webhook verification or processing failed",
       },
       {
