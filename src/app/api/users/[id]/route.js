@@ -51,7 +51,7 @@ export async function PUT(request, { params }) {
     const body = await request.json();
 
     const {
-      name,
+      fullName,
       email,
       phone,
       address,
@@ -64,7 +64,7 @@ export async function PUT(request, { params }) {
     const user = await User.findByIdAndUpdate(
       id,
       {
-        name,
+        fullName,
         email,
         phone,
         address,

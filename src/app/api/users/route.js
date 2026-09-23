@@ -76,7 +76,7 @@ export async function GET() {
     // =========================
 
     const mongoUsers = await User.find()
-      .select("clerkId role name")
+      .select("clerkId role fullName")
       .lean();
 
     // =========================
@@ -204,22 +204,7 @@ export async function POST(request) {
       );
     }
 
-    // =========================
-    // CREATE USER IN CLERK
-    // =========================
-
-    const client = await clerkClient();
-
-    const clerkUser =
-      await client.users.createUser({
-        emailAddress: [normalizedEmail],
-        password,
-        firstName: name,
-      });
-
-    // =========================
-    // WEBHOOK CREATES MONGODB USER
-    // =========================
+    
 
     return NextResponse.json(
       {

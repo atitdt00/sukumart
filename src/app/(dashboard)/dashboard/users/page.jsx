@@ -25,7 +25,7 @@ export default function UsersPage() {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      name: "",
+      fullName: "",
       email: "",
       password: "",
       role: "customer",
@@ -59,7 +59,7 @@ export default function UsersPage() {
     setEditId(null);
 
     reset({
-      name: "",
+      fullName: "",
       email: "",
       password: "",
       role: "customer",
@@ -74,7 +74,7 @@ export default function UsersPage() {
     setEditId(user._id);
 
     reset({
-      name: user.name || "",
+      fullName: user.fullName || "",
       email: user.email || "",
       password: "",
       role: user.role || "customer",
@@ -92,7 +92,7 @@ export default function UsersPage() {
       setSaving(true);
 
       const userData = {
-        name: data.name,
+        fullName: data.fullName,
         email: data.email,
         role: data.role,
       };
@@ -139,7 +139,7 @@ export default function UsersPage() {
         setEditId(null);
 
         reset({
-          name: "",
+          fullName: "",
           email: "",
           password: "",
           role: "customer",
@@ -243,7 +243,7 @@ export default function UsersPage() {
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="text-left px-5 py-4 text-sm">
-                    Name
+                    fullName
                   </th>
 
                   <th className="text-left px-5 py-4 text-sm">
@@ -275,13 +275,13 @@ export default function UsersPage() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-[#0055B3] font-bold">
-                          {user.name
+                          {user.fullName
                             ?.charAt(0)
                             .toUpperCase() || "U"}
                         </div>
 
                         <span className="font-semibold text-gray-800">
-                          {user.name}
+                          {user.fullName}
                         </span>
                       </div>
                     </td>
@@ -384,22 +384,22 @@ export default function UsersPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name
+                  fullName
                 </label>
 
                 <input
                   type="text"
                   placeholder="e.g. Atit"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                  {...register("name", {
+                  {...register("fullName", {
                     required:
-                      "Name is required",
+                      "fullName is required",
                   })}
                 />
 
-                {errors.name && (
+                {errors.fullName && (
                   <p className="text-red-500 text-xs mt-1">
-                    {errors.name.message}
+                    {errors.fullName.message}
                   </p>
                 )}
               </div>

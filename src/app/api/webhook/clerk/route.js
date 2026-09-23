@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
-
 import dbConnect from "../../../../lib/dbConnect";
 import User from "../../../../models/User";
+
 
 export async function POST(request) {
   try {
@@ -42,7 +42,7 @@ export async function POST(request) {
         email_addresses?.[0]?.email_address
           ?.toLowerCase() || "";
 
-      const name =
+      const fullName =
         [first_name, last_name]
           .filter(Boolean)
           .join(" ") || "User";
@@ -53,7 +53,7 @@ export async function POST(request) {
         },
         {
           clerkId: id,
-          name,
+          fullName,
           email,
         },
         {
@@ -85,7 +85,7 @@ export async function POST(request) {
         email_addresses?.[0]?.email_address
           ?.toLowerCase() || "";
 
-      const name =
+      const fullName =
         [first_name, last_name]
           .filter(Boolean)
           .join(" ") || "User";
@@ -96,7 +96,7 @@ export async function POST(request) {
         },
         {
           clerkId: id,
-          name,
+          fullName,
           email,
         },
         {
