@@ -76,8 +76,12 @@ export async function GET() {
     // =========================
 
     const mongoUsers = await User.find()
-      .select("clerkId role fullName email")
+      .select("clerkId role fullName email createdAt")
       .lean();
+
+
+
+
 
     // =========================
     // CREATE ROLE MAP
@@ -92,29 +96,53 @@ export async function GET() {
         ])
     );
 
-    // =========================
-    // COMBINE CLERK + MONGODB
-    // =========================
+ 
 
-    const users = clerkUsers.data.map((user) => ({
-      _id: user.id,
+    //create mongodb users
 
-      clerkId: user.id,
+    const mongoUserMap=new Map(mongoUsers.map((user)=> [
+      user.clerkId || user.email,
+      user,
+    ]))
 
-      fullName:
-        [user.firstName, user.lastName]
-          .filter(Boolean)
-          .join(" ") || "User",
+    //convert clerk users
 
-      email:
-        user.primaryEmailAddress?.emailAddress || "",
+    const clerkUserList= clerkUsers.data.map((user)=>{
+      const email= user.primaryEmailAddress?.emailAddress?.toLowerCase().trim() || "";
 
+      const mongoUser=mongoUserMap.get(user.id) || mongoUserMap.get(email);
+      
+      return {
+        _id: user.id,
+        clerkId: user.id,
 
-      role: roleMap.get(user.id) || "customer",
+        fullName: [user.firstName, user.lastName].filter(Boolean).join("") || "User",
 
-      createdAt: user.createdAt,
+        email,
+        role: mongoUser?.role || "Customer",
 
-    }));
+        createdAt: user.createdAt,
+        authType: "clerk",
+      }
+
+    })
+
+    //Get admin users
+
+    const adminUsers= mongoUsers.filter((user)=> user.role === "admin" && !user.clerkId).map((user)=> (
+      {
+        _id: user._id.toString(),
+
+        clerkId: null,
+        fullName: user.fullName,
+        email: user.email,
+        role: "admin",
+        creeatedAt: user.createdAt,
+        authType: "admin",
+      }
+    ));
+
+    const users=[...clerkUserList, ...adminUsers,]
 
     return NextResponse.json(
       {

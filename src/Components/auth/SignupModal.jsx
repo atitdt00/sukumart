@@ -277,8 +277,8 @@ function SignupModal() {
                   {...register("password", {
                     required: "Password is required",
                     minLength: {
-                      value: 15,
-                      message: "Password must be at least 15 characters",
+                      value: 6,
+                      message: "Password must be at least 6 characters",
                     },
                   })}
                 />
