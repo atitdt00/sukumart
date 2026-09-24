@@ -52,7 +52,7 @@ export async function POST(request) {
 
     //Reset URL
 
-    const resetUrl = `${process.env.Next_PUBLIC_APP_URL}/auth/reset-password/${resetToken}`;
+    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password/${resetToken}`;
 
 
     //Send email

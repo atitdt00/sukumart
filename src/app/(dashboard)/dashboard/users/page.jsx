@@ -159,7 +159,7 @@ export default function UsersPage() {
 
   // DELETE USER
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, authType) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this user?"
     );
@@ -168,10 +168,10 @@ export default function UsersPage() {
 
     try {
       const response = await axios.delete(
-        `${API}/api/users/${id}`
+        `${API}/api/users/${id}?authType=${authType}`
       );
 
-      if (response.data.success) {
+      if (response?.data?.success) {
         toast.success(
           "User deleted successfully"
         );
@@ -332,7 +332,7 @@ export default function UsersPage() {
                         <button
                           onClick={() =>
                             handleDelete(
-                              user._id
+                              user._id, user.authType
                             )
                           }
                           className="text-red-600 text-sm"
@@ -459,9 +459,9 @@ export default function UsersPage() {
                       ? false
                       : "Password is required",
                     minLength: {
-                      value: 6,
+                      value: 15,
                       message:
-                        "Password must be at least 6 characters",
+                        "Password must be at least 15 characters",
                     },
                   })}
                 />

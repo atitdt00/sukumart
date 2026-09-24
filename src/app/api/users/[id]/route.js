@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "../../../../lib/dbConnect";
 import User from "../../../../models/User";
+import { clerkClient } from "@clerk/nextjs/server";
 
 
 // GET single user
@@ -117,22 +118,62 @@ export async function DELETE(request, { params }) {
 
     const { id } = await params;
 
-    const user = await User.findByIdAndDelete(id);
+    //Get authType from URL
+    const {searchParams}= new URL(request.url);
+    const authType= searchParams.get("authType");
 
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "User not found",
-        },
-        { status: 404 }
-      );
+    //Delete clerk user
+
+    if(authType ==="clerk"){
+      const client= await clerkClient();
+
+      //Delete user from Clerk
+      await client.users.deleteUser(id);
+
+      //Delete Corresponding MongoDB user
+      await User.findOneAndDelete({clerkId: id})
+   
+        return NextResponse.json(
+          {
+            success: true,
+            message: "Clerk user deleted successfully",
+          },
+          { status: 200 }
+        );
+      
     }
 
+//Delete Admin user
+
+    if(authType ==="admin"){
+      const user= await User.findByIdAndDelete(id);
+      if(!user){
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Admin user not found"
+          },
+          {
+            status: 404
+          }
+        )
+      }
+      
+   
+        return NextResponse.json(
+          {
+            success: true,
+            message: "Admin user deleted successfully",
+          },
+          { status: 200 }
+        );
+      
+    }
+//Invalid authType
     return NextResponse.json(
       {
-        success: true,
-        message: "User deleted successfully",
+        success: false,
+        message: "authType is required",
       },
       { status: 200 }
     );

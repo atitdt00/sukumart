@@ -19,9 +19,9 @@ async function checkAdmin() {
           success: false,
           message: "Unauthorized. Admin login required.",
         },
-        { status: 401 }
+        { status: 401 },
       ),
-    };  
+    };
   }
 
   if (admin.role !== "admin") {
@@ -32,7 +32,7 @@ async function checkAdmin() {
           success: false,
           message: "Access denied. Admin only.",
         },
-        { status: 403 }
+        { status: 403 },
       ),
     };
   }
@@ -79,10 +79,6 @@ export async function GET() {
       .select("clerkId role fullName email createdAt")
       .lean();
 
-
-
-
-
     // =========================
     // CREATE ROLE MAP
     // =========================
@@ -90,47 +86,43 @@ export async function GET() {
     const roleMap = new Map(
       mongoUsers
         .filter((user) => user.clerkId)
-        .map((user) => [
-          user.clerkId,
-          user.role,
-        ])
+        .map((user) => [user.clerkId, user.role]),
     );
-
- 
 
     //create mongodb users
 
-    const mongoUserMap=new Map(mongoUsers.map((user)=> [
-      user.clerkId || user.email,
-      user,
-    ]))
+    const mongoUserMap = new Map(
+      mongoUsers.map((user) => [user.clerkId || user.email, user]),
+    );
 
     //convert clerk users
 
-    const clerkUserList= clerkUsers.data.map((user)=>{
-      const email= user.primaryEmailAddress?.emailAddress?.toLowerCase().trim() || "";
+    const clerkUserList = clerkUsers.data.map((user) => {
+      const email =
+        user.primaryEmailAddress?.emailAddress?.toLowerCase().trim() || "";
 
-      const mongoUser=mongoUserMap.get(user.id) || mongoUserMap.get(email);
-      
+      const mongoUser = mongoUserMap.get(user.id) || mongoUserMap.get(email);
+
       return {
         _id: user.id,
         clerkId: user.id,
 
-        fullName: [user.firstName, user.lastName].filter(Boolean).join("") || "User",
+        fullName:
+          [user.firstName, user.lastName].filter(Boolean).join("") || "User",
 
         email,
         role: mongoUser?.role || "Customer",
 
         createdAt: user.createdAt,
         authType: "clerk",
-      }
-
-    })
+      };
+    });
 
     //Get admin users
 
-    const adminUsers= mongoUsers.filter((user)=> user.role === "admin" && !user.clerkId).map((user)=> (
-      {
+    const adminUsers = mongoUsers
+      .filter((user) => user.role === "admin" && !user.clerkId)
+      .map((user) => ({
         _id: user._id.toString(),
 
         clerkId: null,
@@ -139,10 +131,9 @@ export async function GET() {
         role: "admin",
         creeatedAt: user.createdAt,
         authType: "admin",
-      }
-    ));
+      }));
 
-    const users=[...clerkUserList, ...adminUsers,]
+    const users = [...clerkUserList, ...adminUsers];
 
     return NextResponse.json(
       {
@@ -150,7 +141,7 @@ export async function GET() {
         count: users.length,
         users,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Get users error:", error);
@@ -158,10 +149,9 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        message:
-          error.message || "Failed to fetch users",
+        message: error.message || "Failed to fetch users",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -190,49 +180,124 @@ export async function POST(request) {
 
     const body = await request.json();
 
-    const {
-      fullName,
-      email,
-      password,
-    } = body;
+    const { fullName, email, password, role } = body;
 
     // =========================
     // REQUIRED FIELDS
     // =========================
 
-    if (!fullName || !email || !password) {
+    if (!fullName || !email || !password || !role) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "fullName, email and password are required",
+          message: "fullName, email and password are required",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const normalizedEmail =
-      email.toLowerCase().trim();
-
-    // =========================
-    // CHECK MONGODB USER
-    // =========================
-
-    const existingUser = await User.findOne({
-      email: normalizedEmail,
-    });
-
-    if (existingUser) {
+    if (!["customer", "admin"].includes(role)) {
       return NextResponse.json(
         {
           success: false,
-          message: "User already exists",
+          message: "Invalid role",
         },
-        { status: 409 }
+        {
+          status: 400,
+        },
       );
     }
 
-    
+    const normalizedEmail = email.toLowerCase().trim();
+
+    /*
+     * CUSTOMER
+     * Create account in Clerk
+     */
+    if (role === "customer") {
+      const existingUser = await User.findOne({
+        email: normalizedEmail,
+      });
+
+      if (existingUser) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "User with this email already exists",
+          },
+          { status: 409 },
+        );
+      }
+
+      const client = await clerkClient();
+
+      const clerkUser = await client.users.createUser({
+        emailAddress: [normalizedEmail],
+        password,
+        firstName: fullName,
+        
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Customer created successfully",
+          user: {
+            clerkId: clerkUser.id,
+            fullName,
+            email: normalizedEmail,
+            role: "customer",
+            authType: "clerk",
+          },
+        },
+        { status: 201 },
+      );
+    }
+
+    /*
+     * ADMIN
+     * Create account in MongoDB
+     */
+    if (role === "admin") {
+      const existingUser = await User.findOne({
+        email: normalizedEmail,
+      });
+
+      if (existingUser) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "User with this email already exists",
+          },
+          { status: 409 },
+        );
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const adminUser = await User.create({
+        fullName,
+        email: normalizedEmail,
+        password: hashedPassword,
+        role: "admin",
+        isActive: true,
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Admin created successfully",
+          user: {
+            _id: adminUser._id,
+            fullName: adminUser.fullName,
+            email: adminUser.email,
+            role: adminUser.role,
+            authType: "admin",
+          },
+        },
+        { status: 201 },
+      );
+    }
 
     return NextResponse.json(
       {
@@ -240,7 +305,7 @@ export async function POST(request) {
         message: "User created successfully",
         clerkUserId: clerkUser.id,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("Create user error:", error);
@@ -248,11 +313,9 @@ export async function POST(request) {
     return NextResponse.json(
       {
         success: false,
-        message:
-          error.message ||
-          "Failed to create user",
+        message: error.message || "Failed to create user",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

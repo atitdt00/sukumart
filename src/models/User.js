@@ -41,14 +41,24 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+
+    resetToken: {
+      type: String,
+      default: null,
+    },
+    
+
+    resetTokenExpire: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-const User =
-  mongoose.models.User ||
-  mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 export default User;
