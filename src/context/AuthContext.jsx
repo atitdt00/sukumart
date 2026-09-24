@@ -28,18 +28,20 @@ export function AuthProvider({ children }) {
     }
   };
   useEffect(() => {
-    checkAuth();
-  }, []);
+    if (isLoaded) {
+      checkAuth();
+    }
+  }, [isLoaded, isSignedIn]);
+
   return (
     <AuthContext.Provider
       value={{
         adminUser,
         setAdminUser,
-        authLoading,
+        authLoading: authLoading || !isLoaded,
         checkAuth,
         user,
         isSignedIn,
-        authLoading: !isLoaded,
       }}
     >
       {children}

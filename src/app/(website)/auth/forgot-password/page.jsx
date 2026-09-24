@@ -1,6 +1,7 @@
 "use client";
 import { useSignIn } from "@clerk/nextjs";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 import { toast } from "react-toastify";
@@ -61,7 +62,7 @@ function page() {
       });
       await signIn.resetPassword({ password: data.password });
       toast.success("Password reset successfully.");
-      window.location.href = "/sign-in";
+      redirect("/sign-in");
     } catch (error) {
       console.error("Reset password error:", error);
       toast.error(

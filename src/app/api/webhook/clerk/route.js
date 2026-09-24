@@ -63,7 +63,7 @@ export async function POST(request) {
       // Create or update MongoDB user
       const user = await User.findOneAndUpdate(
         {
-          clerkId: id,
+          $or: [{ clerkId: id }, ...(email ? [{ email }] : [])],
         },
         {
           clerkId: id,
@@ -116,7 +116,7 @@ export async function POST(request) {
 
       const user = await User.findOneAndUpdate(
         {
-          clerkId: id,
+          $or: [{ clerkId: id }, ...(email ? [{ email }] : [])],
         },
         {
           clerkId: id,

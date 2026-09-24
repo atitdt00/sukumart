@@ -162,7 +162,7 @@ function page() {
               </h1>
 
               <p className="text-sm sm:text-base text-gray-500 mt-2">
-                Welcome back, {user?.fullName ||  user?.fullName || "User"}.
+                Welcome back, {[user?.firstName, user?.lastName].filter(Boolean).join(" ") || "User"}.
                 Manage your account and track your orders.
               </p>
             </div>
@@ -204,7 +204,7 @@ function page() {
               </p>
 
               <h2 className="text-xl sm:text-2xl font-bold truncate">
-                {user?.name || "User"}
+                {[user?.firstName, user?.lastName].filter(Boolean).join(" ") || "User"}
               </h2>
 
               <p className="text-sm sm:text-base text-blue-100 mt-1 break-all">
