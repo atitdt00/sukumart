@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
-import axios from "axios";
+import { forgotAdminPassword } from "../../../../Services/Auth_Service";
 
 function AdminForgotPassword() {
   const [sent, setSent] = useState(false);
@@ -22,14 +22,8 @@ function AdminForgotPassword() {
 
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post(
-        "/api/auth/forgot-password",
-        {
-          email: data.email,
-        }
-      );
-
-      if (response.data.success) {
+      const response = await forgotAdminPassword({email: data.email})
+      if (response.success) {
         setSent(true);
 
         toast.success(

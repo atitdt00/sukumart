@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import axios from "axios";
+import { resetAdminPassword } from "../../../../../Services/Auth_Service";
 
 function AdminResetPassword() {
   const { token } = useParams();
@@ -27,17 +27,11 @@ function AdminResetPassword() {
 
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post(
-        "/api/auth/reset-password",
-        {
-          token,
-          password: data.password,
-        }
-      );
+      const response = await resetAdminPassword({token, password: data.password})
 
-      if (response.data.success) {
+      if (response.success) {
         toast.success(
-          response.data.message ||
+          response.message ||
             "Password reset successfully."
         );
 

@@ -170,23 +170,28 @@ function Featured_products() {
                           )}
                       </div>
                       {/* Add to Cart */}
-                      <div className="w-full px-2  mt-auto">
+                      <div className="w-full px-2 mt-auto flex justify-center items-center">
                         <button
                           type="button"
-                          aria-label="Add product to cart"
+                          aria-label={
+                            product.stock > 0
+                              ? "Add product to cart"
+                              : "Out of Stock"
+                          }
                           onClick={(e) => {
-                            
-                            e.preventDefault()
+                            e.preventDefault();
                             e.stopPropagation();
 
                             addToCart(product);
                           }}
                           disabled={product.stock <= 0}
-                          className="w-full h-10 rounded-lg bg-[#002D62] text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#0055B3] active:scale-[0.98] transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                          className="h-10 w-10 sm:h-10 sm:w-full rounded-lg bg-[#002D62] text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#0055B3] active:scale-[0.98] transition disabled:bg-gray-300 disabled:cursor-not-allowed"
                         >
                           <i className="fa-solid fa-cart-plus"></i>
 
-                          {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
+                          <span className="hidden sm:block">
+                            {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
+                          </span>
                         </button>
                       </div>
                     </div>
