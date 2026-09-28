@@ -22,8 +22,11 @@ export async function POST(request) {
       );
     }
 
+    const normalizedEmail= email.toLowerCase().trim();
+
     const user = await User.findOne({
-      email: email.toLowerCase().trim(),
+      email: normalizedEmail,
+      role: "admin",
     });
 
     if (!user) {

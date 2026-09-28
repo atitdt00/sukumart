@@ -22,12 +22,12 @@ function AdminForgotPassword() {
 
   const onSubmit = async (data) => {
     try {
-      const response = await forgotAdminPassword({email: data.email})
+      const response = await forgotAdminPassword(data.email)
       if (response.success) {
         setSent(true);
 
         toast.success(
-          response.data.message ||
+          response.message ||
             "Password reset link sent to your email."
         );
       }

@@ -43,7 +43,7 @@ export async function generateMetadata({params}){
         };
 
     }catch(error){
-        console.log( "OG metadata error",error);
+        console.log( "OG metadata error:",error);
         return {
             title: "sukumart",
             description: "Online shopping at Sukumart.",

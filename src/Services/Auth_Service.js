@@ -121,9 +121,9 @@ export const resetPassword = async (token, password) => {
 //=======================
 export const forgotAdminPassword = async (email) => {
   try {
-    const response = await axios.post("/api/auth/admin-forgot-password", {
-      email,
-    });
+    const response = await axios.post("/api/auth/admin-forgot-password", 
+      {email},
+    );
 
     return response.data;
   } catch (error) {
