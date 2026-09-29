@@ -31,6 +31,10 @@ export default function Sidebar() {
       name: "Contact",
       href: "/dashboard/contact",
     },
+      {
+      name: "Import",
+      href: "/dashboard/import",
+    },
   ];
 
   return (

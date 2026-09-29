@@ -71,7 +71,7 @@ function Categories_Section() {
               className="cat-card"
             >
               <div className="w-[52px] h-[52px] rounded-[14px] bg-blue-100 overflow-hidden">
-                {/* <Image
+                <Image
                   src={
                     category.image
                       ? `/image/products/${category.image}`
@@ -81,7 +81,7 @@ function Categories_Section() {
                   width={52}
                   height={52}
                   className="object-cover"
-                /> */}
+                />
               </div>
               {category.name}
             </Link>

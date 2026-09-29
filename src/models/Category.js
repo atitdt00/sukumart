@@ -1,36 +1,36 @@
 import mongoose from "mongoose";
 
-
-const categorySchema= new mongoose.Schema({
+const categorySchema = new mongoose.Schema(
+  {
     name: {
-        type:String,
-        required: true,
-        unique: true,
-        trim: true,
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
     },
-    slug:{
-        type:String,
-        required: true,
-        lowercase:true,
-        trim: true,
-        unique: true,
+    slug: {
+      type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
+      unique: true,
     },
     image: {
-        type: String,
-        default: "/image/products/health_tool_1.jpg",
+      type: String,
+      default:"",
     },
-    parent_id:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Category",
-        default: null,
-    }
+    parent_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
 
-},
-    {
-        timestamps:true
-    }
-)
-
-const Category= mongoose.models.Category || mongoose.model('Category', categorySchema)
+const Category =
+  mongoose.models.Category || mongoose.model("Category", categorySchema);
 
 export default Category;

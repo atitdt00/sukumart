@@ -122,71 +122,75 @@ function Page() {
                 : "flex flex-col gap-4"
             }
           >
-            {categories.map((category) => (
-              <Link
-                key={category._id}
-                href={`/categories/${category.slug}`}
-                className={
-                  view === "grid"
-                    ? "group relative bg-white border border-gray-100 rounded-2xl p-5 sm:p-6 no-underline flex flex-col gap-4 hover:border-blue-200 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden"
-                    : "group relative bg-white border border-gray-100 rounded-2xl p-4 flex items-center gap-5 hover:border-blue-200 hover:shadow-lg transition-all duration-200"
-                }
-              >
-                {/* Decorative Circle */}
-                <div className="absolute top-0 right-0 w-28 h-28 rounded-full bg-blue-50 -translate-y-10 translate-x-10 group-hover:bg-blue-100 transition-colors" />
+            {categories.map((category) => {
+              const isSubCategory = Boolean(category.parent_id);
 
-                {/* Category Icon/Image */}
-                <div
+              return (
+                <Link
+                  key={category._id}
+                  href={`/categories/${category.slug}`}
                   className={
                     view === "grid"
-                      ? "relative w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 text-xl overflow-hidden"
-                      : "relative w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 text-xl overflow-hidden shrink-0"
+                      ? `group relative bg-white border rounded-2xl p-5 sm:p-6 no-underline flex flex-col gap-4 hover:border-blue-200 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden ${
+                          isSubCategory
+                            ? "ml-2 border-l-4 border-l-[#F4C542]"
+                            : "border-gray-100"
+                        }`
+                      : `group relative bg-white border rounded-2xl p-4 flex items-center gap-5 hover:border-blue-200 hover:shadow-lg transition-all duration-200 ${
+                          isSubCategory
+                            ? "ml-4 border-l-4 border-l-[#F4C542]"
+                            : "border-gray-100"
+                        }`
                   }
                 >
-                  {/* {category.image ? (
-                    <Image
-                      src={
-                        category.image
-                          ? `/image/products/${category.image}`
-                          : "/image/products/mobile_1.jpg"
+                  {/* Decorative Circle */}
+                  <div className="absolute top-0 right-0 w-28 h-28 rounded-full bg-blue-50 -translate-y-10 translate-x-10 group-hover:bg-blue-100 transition-colors" />
+
+                  {/* Category Icon */}
+                  <div
+                    className={
+                      view === "grid"
+                        ? "relative w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 text-xl overflow-hidden"
+                        : "relative w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 text-xl overflow-hidden shrink-0"
+                    }
+                  >
+                    <i
+                      className={
+                        isSubCategory
+                          ? "fa-solid fa-folder-open"
+                          : "fa-solid fa-layer-group"
                       }
-                      alt={category.name}
-                      width={200}
-                      height={200}
-                      className="w-full h-full object-cover"
                     />
-                  ) : (
-                    <i className="fa-solid fa-layer-group" />
-                  )} */}
-                </div>
+                  </div>
 
-                {/* Category Information */}
-                <div className="flex-1 relative">
-                  <h3 className="font-bold text-gray-800 text-base leading-tight group-hover:text-[#002D62] transition-colors">
-                    {category.name}
-                  </h3>
+                  {/* Category Information */}
+                  <div className="flex-1 relative">
+                    {isSubCategory && (
+                      <p className="text-[10px] uppercase tracking-wider font-bold text-[#F4C542] mb-1">
+                        {category.parent_id?.name}
+                      </p>
+                    )}
 
-                  {category.parent_id && (
+                    <h3 className="font-bold text-gray-800 text-base leading-tight group-hover:text-[#002D62] transition-colors">
+                      {category.name}
+                    </h3>
+
                     <p className="text-gray-400 text-xs mt-1">
-                      {category.parent_id.name}
+                      Explore {category.name}
                     </p>
-                  )}
+                  </div>
 
-                  <p className="text-gray-400 text-xs mt-1">
-                    Explore {category.name}
-                  </p>
-                </div>
+                  {/* Arrow */}
+                  <div className="relative flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
+                      View products
+                    </span>
 
-                {/* Arrow */}
-                <div className="relative flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
-                    View products
-                  </span>
-
-                  <i className="fa-solid fa-arrow-right ml-3 text-[11px] text-gray-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
-                </div>
-              </Link>
-            ))}
+                    <i className="fa-solid fa-arrow-right ml-3 text-[11px] text-gray-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
 

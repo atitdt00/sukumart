@@ -11,6 +11,8 @@ function page() {
   const { addToCart } = useCart();
   const params = useParams();
 
+  const [subCategories, setSubCategories] = useState([]);
+
   const [selectedImage, setSelectedImage] = useState(null);
   const [category, setCategory] = useState(null);
   const [products, setProducts] = useState([]);
@@ -19,8 +21,12 @@ function page() {
     const fetchCategoryProducts = async () => {
       try {
         const data = await getCategoryBySlug(params.slug);
+
         setCategory(data.category);
+
         setProducts(data.products || []);
+
+        setSubCategories(data.subCategories || []);
       } catch (error) {
         console.error("Category products error:", error);
       }
@@ -51,6 +57,42 @@ function page() {
 
           <p className="text-gray-400 mt-1">{products.length} products</p>
         </div>
+
+        {/* Subcategories */}
+
+        {subCategories.length > 0 && (
+          <div className="mb-10">
+            <div className="mb-5">
+              <h2 className="text-xl font-bold text-gray-800">
+                Shop by Subcategory
+              </h2>
+
+              <p className="text-sm text-gray-400 mt-1">
+                Explore {category.name} by category
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {subCategories.map((subCategory) => (
+                <Link
+                  key={subCategory._id}
+                  href={`/categories/${subCategory.slug}`}
+                  className="group bg-white border border-gray-100 rounded-xl p-4 hover:border-blue-200 hover:shadow-md transition-all"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#0055B3] flex items-center justify-center mb-3">
+                    <i className="fa-solid fa-folder-open" />
+                  </div>
+
+                  <h3 className="font-semibold text-gray-800 group-hover:text-[#002D62]">
+                    {subCategory.name}
+                  </h3>
+
+                  <p className="text-xs text-gray-400 mt-1">View products</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Products */}
 

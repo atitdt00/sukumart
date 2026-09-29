@@ -21,6 +21,7 @@ export default function ProductsPage() {
 
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [currentThumbnail, setCurrentThumbnail] = useState("");
 
   // REACT HOOK FORM
 
@@ -44,6 +45,26 @@ export default function ProductsPage() {
       variants: [],
     },
   });
+
+  //cloudinary image helper
+  const getProductImage = (image) => {
+    if (!image) {
+      return "/image/products/sukumartlogo.jpg";
+    }
+
+    // Cloudinary or any external URL
+    if (image.startsWith("http")) {
+      return image;
+    }
+
+    // Already a complete local path
+    if (image.startsWith("/image/")) {
+      return image;
+    }
+
+    // Old database value containing only filename
+    return `/image/products/${image}`;
+  };
 
   // GET PRODUCTS
 
@@ -87,7 +108,7 @@ export default function ProductsPage() {
 
   const openAddModal = () => {
     setEditId(null);
-
+    setCurrentThumbnail("")
     reset({
       name: "",
       slug: "",
@@ -107,6 +128,7 @@ export default function ProductsPage() {
 
   const openEditModal = (product) => {
     setEditId(product._id);
+    setCurrentThumbnail(product.thumbnail || "");
 
     reset({
       name: product.name || "",
@@ -114,7 +136,7 @@ export default function ProductsPage() {
       price: product.price || "",
       stock: product.stock || "",
       category_id: product.category_id?._id || "",
-      thumbnail: product.thumbnail || "",
+      thumbnail: "",
       gallery: [],
       description: product.description || "",
       variants: product.variants || [],
@@ -247,7 +269,6 @@ export default function ProductsPage() {
           gallery: [],
           description: "",
           variants: [],
-          isFeatured: false,
         });
       }
     } catch (error) {
@@ -305,7 +326,7 @@ export default function ProductsPage() {
       toast.success(
         newValue
           ? `${feature} added to featured`
-          : `${feature} removed from featured`
+          : `${feature} removed from featured`,
       );
     } catch (error) {
       console.error(error);
@@ -384,16 +405,11 @@ export default function ProductsPage() {
                       <div className="flex items-center gap-3">
                         <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
                           <Image
-                            src={
-                              product.thumbnail
-                                ? `/image/products/${product.thumbnail}`
-                                : "/image/products/sukumartlogo.jpg"
-                            }
+                            src={getProductImage(product.thumbnail)}
                             alt={product.name || "Product"}
-                            
                             className="object-cover"
-                            width={300}
-                            height={300}
+                            fill
+                            sizes="48px"
                           />
                         </div>
 
@@ -551,7 +567,10 @@ export default function ProductsPage() {
 
               <button
                 type="button"
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setCurrentThumbnail("");
+                }}
                 className="text-gray-400 hover:text-gray-700 text-xl"
               >
                 ×
@@ -684,11 +703,37 @@ export default function ProductsPage() {
                 >
                   <option value="">Select Category</option>
 
-                  {categories.map((category) => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
+                  {categories
+                    .filter((category) => !category.parent_id)
+                    .map((parent) => {
+                      const children = categories.filter(
+                        (child) =>
+                          (child.parent_id?._id || child.parent_id) ===
+                          parent._id,
+                      );
+
+                      if (children.length === 0) {
+                        return (
+                          <option key={parent._id} value={parent._id}>
+                            {parent.name}
+                          </option>
+                        );
+                      }
+
+                      return (
+                        <optgroup key={parent._id} label={parent.name}>
+                          <option value={parent._id}>
+                            {parent.name} (Main Category)
+                          </option>
+
+                          {children.map((child) => (
+                            <option key={child._id} value={child._id}>
+                              ↳ {child.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      );
+                    })}
                 </select>
 
                 {errors.category_id && (
@@ -830,20 +875,42 @@ export default function ProductsPage() {
 
               <div className="flex items-center justify-between gap-2 lg:gap-4">
                 {/* THUMBNAIL */}
+                {/* THUMBNAIL */}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Thumbnail
                   </label>
 
+                  {/* CURRENT THUMBNAIL - EDIT MODE ONLY */}
+                  {editId && currentThumbnail && (
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-500 mb-1">
+                        Current Thumbnail
+                      </p>
+
+                      <div className="relative w-20 h-20 rounded-lg overflow-hidden border">
+                        <Image
+                          src={getProductImage(currentThumbnail)}
+                          alt="Current product thumbnail"
+                          fill
+                          sizes="80px"
+                          className="object-cover"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* NEW THUMBNAIL */}
                   <input
                     type="file"
-                    placeholder="jpg"
+                    accept="image/*"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
                     {...register("thumbnail", {
                       required: !editId ? "Product image is required" : false,
                     })}
                   />
+
                   {errors.thumbnail && (
                     <p className="text-red-500 text-xs mt-1">
                       {errors.thumbnail.message}
