@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import Category from "../../../models/Category";
 import dbConnect from "../../../lib/dbConnect";
 import { uploadToCloudinary } from "../../../lib/uploadToCloudinary";
+
 export const runtime = "nodejs";
 
 // =====================================================
@@ -56,12 +57,32 @@ export async function POST(request) {
   try {
     await dbConnect();
 
+    // =====================================================
+    // READ FORM DATA
+    // =====================================================
+
     const formData = await request.formData();
 
     const name = formData.get("name")?.trim();
     const slug = formData.get("slug")?.trim().toLowerCase();
     const parent_id = formData.get("parent_id") || null;
     const imageFile = formData.get("image");
+
+    // =====================================================
+    // DEBUG: CHECK RECEIVED IMAGE
+    // =====================================================
+
+    console.log("=================================");
+    console.log("CATEGORY IMAGE RECEIVED");
+    console.log("=================================");
+
+    console.log({
+      exists: !!imageFile,
+      isString: typeof imageFile === "string",
+      name: imageFile?.name,
+      type: imageFile?.type,
+      size: imageFile?.size,
+    });
 
     // =====================================================
     // VALIDATION
@@ -82,10 +103,7 @@ export async function POST(request) {
     // =====================================================
 
     const existingCategory = await Category.findOne({
-      $or: [
-        { name },
-        { slug },
-      ],
+      $or: [{ name }, { slug }],
     });
 
     if (existingCategory) {
@@ -102,8 +120,6 @@ export async function POST(request) {
     // VALIDATE PARENT
     // =====================================================
 
-    let parentCategory = null;
-
     if (parent_id) {
       if (!mongoose.Types.ObjectId.isValid(parent_id)) {
         return NextResponse.json(
@@ -115,7 +131,7 @@ export async function POST(request) {
         );
       }
 
-      parentCategory = await Category.findById(parent_id);
+      const parentCategory = await Category.findById(parent_id);
 
       if (!parentCategory) {
         return NextResponse.json(
@@ -151,6 +167,20 @@ export async function POST(request) {
       typeof imageFile !== "string" &&
       imageFile.size > 0
     ) {
+      console.log("=================================");
+      console.log("UPLOADING CATEGORY IMAGE");
+      console.log("=================================");
+
+      console.log({
+        name: imageFile.name,
+        type: imageFile.type,
+        size: imageFile.size,
+      });
+
+      // ---------------------------------------------------
+      // Validate file type
+      // ---------------------------------------------------
+
       if (!imageFile.type.startsWith("image/")) {
         return NextResponse.json(
           {
@@ -160,6 +190,10 @@ export async function POST(request) {
           { status: 400 },
         );
       }
+
+      // ---------------------------------------------------
+      // Validate file size
+      // ---------------------------------------------------
 
       if (imageFile.size > 5 * 1024 * 1024) {
         return NextResponse.json(
@@ -171,17 +205,48 @@ export async function POST(request) {
         );
       }
 
-      const uploadedImage =
-        await uploadToCloudinary(
-          imageFile,
-          "sukumart/categories",
+      // ---------------------------------------------------
+      // Upload to Cloudinary
+      // ---------------------------------------------------
+
+      const uploadedImage = await uploadToCloudinary(
+        imageFile,
+        "sukumart/categories",
+      );
+
+      // ---------------------------------------------------
+      // DEBUG: Cloudinary response
+      // ---------------------------------------------------
+
+      console.log("=================================");
+      console.log("CLOUDINARY RESULT");
+      console.log("=================================");
+
+      console.log({
+        public_id: uploadedImage?.public_id,
+        secure_url: uploadedImage?.secure_url,
+        resource_type: uploadedImage?.resource_type,
+      });
+
+      // ---------------------------------------------------
+      // Make sure Cloudinary returned URL
+      // ---------------------------------------------------
+
+      if (!uploadedImage?.secure_url) {
+        throw new Error(
+          "Cloudinary upload completed but no secure URL was returned",
         );
+      }
 
       image = uploadedImage.secure_url;
+
+      console.log("CATEGORY IMAGE URL:", image);
+    } else {
+      console.log("No category image received.");
     }
 
     // =====================================================
-    // CREATE
+    // CREATE CATEGORY
     // =====================================================
 
     const newCategory = await Category.create({
@@ -191,11 +256,18 @@ export async function POST(request) {
       parent_id,
     });
 
-    // Populate parent before response
+    // =====================================================
+    // POPULATE PARENT
+    // =====================================================
+
     await newCategory.populate(
       "parent_id",
       "name slug image",
     );
+
+    // =====================================================
+    // RESPONSE
+    // =====================================================
 
     return NextResponse.json(
       {
@@ -208,13 +280,22 @@ export async function POST(request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Create category error:", error);
+    console.error("=================================");
+    console.error("CREATE CATEGORY ERROR");
+    console.error("=================================");
+
+    console.error("Message:", error.message);
+    console.error("Name:", error.name);
+    console.error("HTTP Code:", error.http_code);
+    console.error("Full error:", error);
 
     return NextResponse.json(
       {
         success: false,
         message:
           error.message || "Failed to create category",
+        name: error.name,
+        http_code: error.http_code || null,
       },
       { status: 500 },
     );

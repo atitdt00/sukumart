@@ -9,6 +9,7 @@ import {
   getCategories,
   updateCategory,
 } from "../../../../Services/Category_Service";
+import Image from "next/image";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
@@ -68,6 +69,18 @@ export default function CategoriesPage() {
   // CREATE / UPDATE CATEGORY
   // --------------------------------------------------
   const onSubmit = async (data) => {
+    console.log("FORM DATA FROM REACT HOOK FORM:", data);
+
+    console.log("IMAGE FROM REACT HOOK FORM:", data.image);
+    if (data.image?.[0]) {
+      console.log("SELECTED IMAGE:", {
+        name: data.image[0].name,
+        type: data.image[0].type,
+        size: data.image[0].size,
+      });
+    } else {
+      console.log("❌ React Hook Form did not receive an image");
+    }
     try {
       setSaving(true);
 
@@ -220,9 +233,7 @@ export default function CategoriesPage() {
     }
 
     // Fallback if parent_id is only an ObjectId
-    const parent = categories.find(
-      (item) => item._id === category.parent_id,
-    );
+    const parent = categories.find((item) => item._id === category.parent_id);
 
     return parent?.name || null;
   };
@@ -256,9 +267,7 @@ export default function CategoriesPage() {
       {/* ================= HEADER ================= */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">
-            Categories
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-800">Categories</h1>
 
           <p className="text-sm text-gray-500 mt-1">
             Manage main categories and subcategories
@@ -317,33 +326,21 @@ export default function CategoriesPage() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="text-left px-5 py-4 text-sm">
-                    Image
-                  </th>
+                  <th className="text-left px-5 py-4 text-sm">Image</th>
 
-                  <th className="text-left px-5 py-4 text-sm">
-                    Name
-                  </th>
+                  <th className="text-left px-5 py-4 text-sm">Name</th>
 
-                  <th className="text-left px-5 py-4 text-sm">
-                    Slug
-                  </th>
+                  <th className="text-left px-5 py-4 text-sm">Slug</th>
 
-                  <th className="text-left px-5 py-4 text-sm">
-                    Type
-                  </th>
+                  <th className="text-left px-5 py-4 text-sm">Type</th>
 
                   <th className="text-left px-5 py-4 text-sm">
                     Parent Category
                   </th>
 
-                  <th className="text-left px-5 py-4 text-sm">
-                    Created
-                  </th>
+                  <th className="text-left px-5 py-4 text-sm">Created</th>
 
-                  <th className="text-left px-5 py-4 text-sm">
-                    Action
-                  </th>
+                  <th className="text-left px-5 py-4 text-sm">Action</th>
                 </tr>
               </thead>
 
@@ -361,10 +358,12 @@ export default function CategoriesPage() {
                       {/* IMAGE */}
                       <td className="px-5 py-4">
                         {imageUrl ? (
-                          <img
+                          <Image
                             src={imageUrl}
                             alt={category.name}
                             className="w-12 h-12 object-cover rounded-lg border border-gray-200"
+                            width={80}
+                            height={80}
                           />
                         ) : (
                           <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-400">
@@ -377,9 +376,7 @@ export default function CategoriesPage() {
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
                           {isSubcategory && (
-                            <span className="text-gray-400">
-                              ↳
-                            </span>
+                            <span className="text-gray-400">↳</span>
                           )}
 
                           <p className="font-semibold text-gray-800">
@@ -408,19 +405,13 @@ export default function CategoriesPage() {
 
                       {/* PARENT */}
                       <td className="px-5 py-4 text-sm text-gray-600">
-                        {parentName || (
-                          <span className="text-gray-400">
-                            —
-                          </span>
-                        )}
+                        {parentName || <span className="text-gray-400">—</span>}
                       </td>
 
                       {/* CREATED */}
                       <td className="px-5 py-4 text-sm text-gray-500">
                         {category.createdAt
-                          ? new Date(
-                              category.createdAt,
-                            ).toLocaleDateString()
+                          ? new Date(category.createdAt).toLocaleDateString()
                           : "-"}
                       </td>
 
@@ -428,18 +419,14 @@ export default function CategoriesPage() {
                       <td className="px-5 py-4">
                         <div className="flex gap-3">
                           <button
-                            onClick={() =>
-                              openEditModal(category)
-                            }
+                            onClick={() => openEditModal(category)}
                             className="text-blue-600 text-sm hover:text-blue-800"
                           >
                             Edit
                           </button>
 
                           <button
-                            onClick={() =>
-                              handleDelete(category.slug)
-                            }
+                            onClick={() => handleDelete(category.slug)}
                             className="text-red-600 text-sm hover:text-red-800"
                           >
                             Delete
@@ -483,10 +470,7 @@ export default function CategoriesPage() {
             </div>
 
             {/* FORM */}
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="space-y-4"
-            >
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {/* NAME */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -522,10 +506,7 @@ export default function CategoriesPage() {
                     required: "Slug is required",
 
                     onChange: (e) => {
-                      setValue(
-                        "slug",
-                        e.target.value.toLowerCase(),
-                      );
+                      setValue("slug", e.target.value.toLowerCase());
                     },
                   })}
                 />
@@ -550,23 +531,16 @@ export default function CategoriesPage() {
                   <option value="">Main Category</option>
 
                   {mainCategories
-                    .filter(
-                      (category) =>
-                        category.slug !== editSlug,
-                    )
+                    .filter((category) => category.slug !== editSlug)
                     .map((category) => (
-                      <option
-                        key={category._id}
-                        value={category._id}
-                      >
+                      <option key={category._id} value={category._id}>
                         {category.name}
                       </option>
                     ))}
                 </select>
 
                 <p className="text-xs text-gray-400 mt-1">
-                  Leave this as "Main Category" to create a
-                  top-level category.
+                  Leave this as "Main Category" to create a top-level category.
                 </p>
               </div>
 
@@ -591,19 +565,17 @@ export default function CategoriesPage() {
 
                 {/* CURRENT IMAGE ON EDIT */}
                 {editSlug &&
-                  categories.find(
-                    (category) => category.slug === editSlug,
-                  )?.image && (
+                  categories.find((category) => category.slug === editSlug)
+                    ?.image && (
                     <div className="mt-3">
                       <p className="text-xs text-gray-500 mb-2">
                         Current Image
                       </p>
 
-                      <img
+                      <Image
                         src={getCategoryImage(
                           categories.find(
-                            (category) =>
-                              category.slug === editSlug,
+                            (category) => category.slug === editSlug,
                           ),
                         )}
                         alt="Current category"
